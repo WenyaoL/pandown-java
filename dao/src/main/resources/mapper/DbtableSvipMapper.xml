@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pan.pandown.dao.mapper.DbtableSvipMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.pan.pandown.dao.entity.DbtableSvip">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="svip_bduss" property="svipBduss" />
+        <result column="svip_stoken" property="svipStoken" />
+        <result column="add_time" property="addTime" />
+        <result column="state" property="state" />
+        <result column="is_using" property="isUsing" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, svip_bduss, svip_stoken, add_time, state, is_using
+    </sql>
+
+</mapper>

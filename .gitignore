@@ -1,0 +1,12 @@
+.DS_Store
+.idea
+*.iml
+.idea
+logs
+out
+gen
+web/target
+util/target
+service/target
+dao/target
+api/target
