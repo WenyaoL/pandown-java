@@ -1,4 +1,4 @@
-package com.pan.pandown.web.config;
+package com.pan.pandown.web.config.http;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
