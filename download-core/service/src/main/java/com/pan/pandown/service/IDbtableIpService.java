@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  *  服务类
  * </p>
  *
- * @author wenyao
+ * @author yalier(wenyao)
  * @since 2023-04-17
  */
 public interface IDbtableIpService extends IService<DbtableIp> {

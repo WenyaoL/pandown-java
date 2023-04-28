@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
  *  服务类
  * </p>
  *
- * @author wenyao
+ * @author yalier(wenyao)
  * @since 2023-04-20
  */
 public interface IPandownUserService extends IService<PandownUser>, UserDetailsService {

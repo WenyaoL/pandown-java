@@ -7,3 +7,20 @@ export function getShareDir(data:any){
     data
   })
 }
+
+export function getSignAndTime(data:any){
+  return request({
+    url:'api/getSignAndTime',
+    method: 'post',
+    data
+  })
+}
+
+
+export function getsvipdlink(data:any){
+  return request({
+    url:'api/getsvipdlink',
+    method: 'post',
+    data
+  })
+}

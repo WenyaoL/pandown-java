@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Description: 针对Controller出现异常返回前台
+ * @author yalier(wenyao)
+ * @since 2023/4/28
+ * @Description
  */
-
 @RestControllerAdvice
 @Slf4j
 public class ExceptionResponse {

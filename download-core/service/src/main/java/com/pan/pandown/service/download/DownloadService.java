@@ -1,39 +1,25 @@
 package com.pan.pandown.service.download;
 
+import com.pan.pandown.api.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.*;
 
 @Service
 public class DownloadService {
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Value("${pandown.downloadApi.getFileList.url}")
-    private String fileListUrl;
-
-    @Value("${pandown.BDUSS}")
-    private String bduss;
+    private RequestService requestService;
 
     /**
      * 返回所有分享信息
-     * @param surl
-     * @param pwd
+     * @param surl 分享surl
+     * @param pwd 分享验证码
      * @return
      */
     public Map listShare(String surl,String pwd){
-        ResponseEntity<Map> responseEntity = requestFileList(surl, pwd, "", 1);
+        ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, "", 1);
         Map data = (Map) responseEntity.getBody().get("data");
         //链接有效检验
         if(Objects.nonNull(data) && Objects.nonNull(data.get("list")) && ((List)data.get("list")).size()>0){
@@ -44,7 +30,14 @@ public class DownloadService {
         return null;
     }
 
-
+    /**
+     *
+     * @param surl 分享surl
+     * @param pwd 分享验证码
+     * @param dir 解析目录
+     * @param saveList 存储列表
+     * @return 存储列表
+     */
     public List listFiles(String surl,String pwd,String dir, List saveList){
         if (saveList == null) saveList = new ArrayList();
         List<Map> dataList = (List)listDir(surl, pwd, dir, 1).get("list");
@@ -63,52 +56,41 @@ public class DownloadService {
 
     /**
      * 列举分享文件夹
-     * @param surl
-     * @param pwd
-     * @param dir
-     * @param page
+     * @param surl 分享surl
+     * @param pwd 分享验证码
+     * @param dir 解析目录
+     * @param page 请求页码
      * @return
      */
     public Map listDir(String surl,String pwd,String dir,Integer page){
-        ResponseEntity<Map> responseEntity = requestFileList(surl, pwd, dir, page);
+        ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, dir, page);
         return (Map) responseEntity.getBody().getOrDefault("data",null);
     }
 
 
-    /***
-     * 文件列表网络请求
-     * @param surl
-     * @param pwd
-     * @param dir
-     * @param page
-     * @return
-     */
-    public ResponseEntity<Map> requestFileList(String surl,String pwd,String dir,Integer page){
-        //请求体(表单形式)
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("shorturl",surl);
-        body.add("dir",dir);
-        if(StringUtils.hasText(dir)){
-            body.add("root",0);
-        }else {
-            body.add("root",1);
+
+
+    public Map getSignAndTime(String surl){
+        ResponseEntity<Map> responseEntity = requestService.requestSignAndTime(surl);
+
+        String errno = responseEntity.getBody().get("errno").toString();
+
+        if (errno.equals("0")){
+            return (Map) responseEntity.getBody().get("data");
+        }else{
+            //请求失败，更新cookie重新请求一次
+            List<String> cookies = responseEntity.getHeaders().get("Set-Cookie");
+            cookies.forEach(cookie->{
+                String baiduId = cookie.startsWith("BAIDUID=") ? cookie.split(";")[0].substring(8):"";
+                requestService.addCookie("baiduId",baiduId);
+
+            });
+            //重新请求一次
+            responseEntity = requestService.requestSignAndTime(surl);
+            errno = responseEntity.getBody().get("errno").toString();
+            return errno.equals("0") ? (Map) responseEntity.getBody().get("data") :null;
         }
-        body.add("pwd",pwd);
-        body.add("page",page.intValue());
-        body.add("num",1000);
-        body.add("order","time");
 
-        //请求头
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.set("User-Agent","netdisk");
-        headers.set("Cookie","BDUSS=".concat(bduss));
-
-        //请求实例
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<Map> responseEntity = restTemplate.postForEntity(fileListUrl, httpEntity, Map.class);
-        return responseEntity;
     }
 
 }

@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  *  Mapper 接口
  * </p>
  *
- * @author wenyao
+ * @author yalier(wenyao)
  * @since 2023-04-17
  */
 public interface DbtableMapper extends BaseMapper<Dbtable> {

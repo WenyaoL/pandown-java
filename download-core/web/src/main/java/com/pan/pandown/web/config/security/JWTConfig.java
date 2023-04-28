@@ -18,6 +18,11 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+/**
+ * @author yalier(wenyao)
+ * @since 2023/4/28
+ * @Description 
+ */
 @Configuration
 public class JWTConfig {
 

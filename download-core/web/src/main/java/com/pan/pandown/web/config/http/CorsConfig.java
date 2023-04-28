@@ -11,22 +11,13 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Collections;
-
 /**
  * 解决跨域问题
+ * @author yalier
  */
 @Configuration
 public class CorsConfig {
 
-    /*@Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns("*")
-                .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowCredentials(true)
-                .maxAge(3600);
-
-    }*/
 
     @Bean
     public FilterRegistrationBean filterRegistrationBean() {
@@ -45,7 +36,7 @@ public class CorsConfig {
         CorsFilter corsFilter = new CorsFilter(source);
 
         FilterRegistrationBean<CorsFilter> filterRegistrationBean=new FilterRegistrationBean<>(corsFilter);
-        filterRegistrationBean.setOrder(-101);  // 小于 SpringSecurity Filter的 Order(-100) 即可
+        filterRegistrationBean.setOrder(-101);  // 小于 -100 即可,在安全过滤链前面
 
         return filterRegistrationBean;
     }

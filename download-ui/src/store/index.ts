@@ -18,7 +18,6 @@ const store = createStore<any>({
     },
     setPandownData(state, value) {
       state.pandownData = value
-      console.log(state.pandownData)
     }
   },
   actions: {},

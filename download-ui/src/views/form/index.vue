@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import baiduapi from '@/api/baidu'
 import {getShareDir} from '@/api/download'
 import { mapState } from 'vuex'
 import { mapMutations } from 'vuex'
@@ -96,10 +95,8 @@ export default {
       if (link && surl && pwd) {
         this.$store.commit('setSurl', surl)
         this.$store.commit('setPwd', pwd)
-        console.log("请求数据");
         getShareDir({surl,pwd,dir:""})
         .then(response =>{
-          
           if(response.code == "200"){
             const data = response.data
             this.$store.commit('setPandownData', data)

@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * @author yalier
+ */
 @Configuration
 public class RestConfig {
 

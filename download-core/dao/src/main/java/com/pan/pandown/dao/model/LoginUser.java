@@ -11,6 +11,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serializable;
 import java.util.Collection;
 
+
+/**
+ * @author yalier(wenyao)
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,9 +23,6 @@ public class LoginUser implements UserDetails, Serializable {
     private static final long serialVersionUID = 1L;
 
     private PandownUser pandownUser;
-
-
-
 
 
     @Override
