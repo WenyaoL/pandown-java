@@ -1,0 +1,65 @@
+# 数据源配置
+spring:
+  redis:
+    timeout: 1000
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    druid:
+      url: jdbc:mysql://127.0.0.1:3306/pandown?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowMultiQueries=true&rewriteBatchedStatements=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+      username: root
+      password: A258258258
+      # 初始连接数
+      initialSize: 5
+      # 最小连接池数量
+      minIdle: 5
+      # 最大连接池数量
+      maxActive: 20
+      # 配置获取连接等待超时的时间
+      maxWait: 60000
+  security:
+    basic:
+      path: /swagger-ui.html
+      enabled: true
+    user:
+      name: admin #账号
+      password: 123456  #密码
+
+# mybaits-plus配置
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  global-config:
+    banner: false
+    db-config:
+      id-type: input
+      table-underline: true
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+
+snowflake:
+  machine-id: 1
+  data-center-id: 1
+
+pandown:
+  BDUSS: laY2tpdTAAAAAAAAAAAAOZf5mPmX-ZjU1 #静态bduss
+  JWT:
+    rsaPublicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALlqbfk6hyvTnfZWsIBHfQfHRyDCNGBHZAYvoLod2eZLcK6L/R+8cgpTsgx16KjY4Uv3EAPwtKlyoVPXgBu1AMcCAwEAAQ==
+    rsaPrivateKey: MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAuWpt+TqHK9Od9lawgEd9B8dHIMI0YEdkBi+guh3Z5ktwrov9H7xyClOyDHXoqNjhS/cQA/C0qXKhU9eAG7UAxwIDAQABAkEArTGWMkSSeMS9+5m0Ws7sInTpotblF73317Nrfg5eOLdNzuMfRJbXU/mm8rCddsonegfHV+mFQR4XxmlqW2X4EQIhAON8mZSKY3PqTiyvtGltbIeDAzeu/gi+z/1kFgBKXSC/AiEA0KfkVxRTIDqSeo0DEVPOFE6ZWkAgiY5LZ0KSg1bymfkCIEXPpxH+piaccQElqqfv/K5ZdlNQUIU+iXWpkVble07hAiA9QLw4j//jGy67CUBYStjZf0VniCHFH9+k3ZczNUgcyQIhAOIeGwTy19+7P84mgoiOIQc7xhc9dlJcdxmb4kQ6hYcN
+    expireTime: 30
+  downloadApi:
+    getFileList:
+      url: https://pan.baidu.com/share/wxlist?channel=weixin&version=2.2.2&clienttype=25&web=1
+
+
+server:
+  port: 8080
+
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true
