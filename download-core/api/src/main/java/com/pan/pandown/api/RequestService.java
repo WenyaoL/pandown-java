@@ -1,5 +1,6 @@
 package com.pan.pandown.api;
 
+import com.pan.pandown.util.DTO.DownloadApiDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -28,6 +29,12 @@ public class RequestService {
     @Value("${pandown.downloadApi.getFileList.url}")
     private String fileListUrl;
 
+    @Value("${pandown.downloadApi.getSignAndTime.url}")
+    private String tplconfigUrl;
+
+    @Value("${pandown.downloadApi.getDlink.url}")
+    private String getDlinkUrl;
+
     @Value("${pandown.BDUSS}")
     private String bduss;
 
@@ -42,6 +49,14 @@ public class RequestService {
      * @return
      */
     public ResponseEntity<Map> requestFileList(String surl, String pwd, String dir, Integer page){
+        URI uri = UriComponentsBuilder.fromHttpUrl(fileListUrl)
+                .queryParam("channel", "weixin")
+                .queryParam("version", "2.2.2")
+                .queryParam("clienttype", 25)
+                .queryParam("web", 1)
+                .build().encode().toUri();
+
+
         //请求体(表单形式)
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("shorturl",surl);
@@ -65,7 +80,7 @@ public class RequestService {
         //请求实例
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Map> responseEntity = restTemplate.postForEntity(fileListUrl, httpEntity, Map.class);
+        ResponseEntity<Map> responseEntity = restTemplate.postForEntity(uri, httpEntity, Map.class);
         return responseEntity;
     }
 
@@ -75,7 +90,7 @@ public class RequestService {
      * @return
      */
     public ResponseEntity<Map> requestSignAndTime(String surl){
-        URI uri = UriComponentsBuilder.fromHttpUrl("https://pan.baidu.com/share/tplconfig")
+        URI uri = UriComponentsBuilder.fromHttpUrl(tplconfigUrl)
                 .queryParam("surl", surl)
                 .queryParam("fields", "sign,timestamp")
                 .queryParam("channel", "chunlei")
@@ -95,6 +110,42 @@ public class RequestService {
 
         return exchange;
     }
+
+    public ResponseEntity<Map> requestDlink(DownloadApiDTO downloadApiDTO){
+        URI uri = UriComponentsBuilder.fromHttpUrl(getDlinkUrl)
+                .queryParam("app_id", 250528)
+                .queryParam("channel", "chunlei")
+                .queryParam("clienttype", 12)
+                .queryParam("sign", downloadApiDTO.getSign())
+                .queryParam("timestamp", downloadApiDTO.getTimestamp())
+                .queryParam("web", 1)
+                .encode().build().toUri();
+
+        //请求体(表单形式)
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.set("encrypt",0);
+        body.set("extra",new HashMap<String,String>(){{put("sekey",downloadApiDTO.getSekey());}});
+        body.set("fid_list",downloadApiDTO.getFsIdList());
+        body.set("primaryid",downloadApiDTO.getPrimaryid());
+        body.set("uk",downloadApiDTO.getUk());
+        body.set("product","share");
+        body.set("type","nolimit");
+
+        //请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.set("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.69");
+        headers.set("Referer","https://pan.baidu.com/disk/home");
+        headers.set("Cookie","BDUSS=".concat(bduss));
+
+        //请求实例
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map> responseEntity = restTemplate.postForEntity(uri, httpEntity, Map.class);
+
+        return responseEntity;
+    }
+
 
     public void setCookies(Map<String, String> cookies) {
         this.cookies = cookies;

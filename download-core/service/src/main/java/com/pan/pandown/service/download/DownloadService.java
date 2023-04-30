@@ -1,6 +1,7 @@
 package com.pan.pandown.service.download;
 
 import com.pan.pandown.api.RequestService;
+import com.pan.pandown.util.DTO.DownloadApiDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -91,6 +92,12 @@ public class DownloadService {
             return errno.equals("0") ? (Map) responseEntity.getBody().get("data") :null;
         }
 
+    }
+
+
+    public Object getDlink(DownloadApiDTO downloadApiDTO){
+        ResponseEntity<Map> responseEntity = requestService.requestDlink(downloadApiDTO);
+        return responseEntity.getBody().getOrDefault("list",null);
     }
 
 }

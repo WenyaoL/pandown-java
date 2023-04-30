@@ -1,15 +1,14 @@
 package com.pan.pandown.web.controller;
 
 
-import com.pan.pandown.dao.DTO.UserLoginDTO;
-import com.pan.pandown.dao.DTO.UserRegisterDTO;
+import com.pan.pandown.util.DTO.UserLoginDTO;
+import com.pan.pandown.util.DTO.UserRegisterDTO;
 import com.pan.pandown.service.IPandownUserService;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
 import com.pan.pandown.util.constants.RegisterCode;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * <p>

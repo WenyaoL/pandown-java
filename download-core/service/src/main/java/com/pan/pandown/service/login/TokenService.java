@@ -42,16 +42,18 @@ public class TokenService {
      */
     public static final String LOGIN_USER_KEY = "login_user_key";
 
-    protected static final long MILLIS_SECOND = 1000;
+    protected static final long MINUTE_TO_SECOND = 60;
+    protected static final long HOUR_TO_MINUTE = 60;
+    protected static final long DAY_TO_HOUR = 24;
 
-    protected static final long MILLIS_MINUTE = 60 * MILLIS_SECOND;
+    protected static final long DAY_TO_SECOND = MINUTE_TO_SECOND * HOUR_TO_MINUTE * DAY_TO_HOUR;
 
     /**
      * 刷新redis中的令牌有效期
      * @param loginUser
      */
     public void refreshToken(LoginUser loginUser){
-        long expireTimeMillis = expireTime * MILLIS_MINUTE;
+        long expireTimeMillis = expireTime * DAY_TO_SECOND;
         redisService.set(
                 LOGIN_TOKEN_KEY+loginUser.getPandownUser().getId(),
                 loginUser,
@@ -72,6 +74,8 @@ public class TokenService {
         refreshToken(loginUser);
         return token;
     }
+
+
 
     /**
      * 验证当前loginUser对应的token是否存在

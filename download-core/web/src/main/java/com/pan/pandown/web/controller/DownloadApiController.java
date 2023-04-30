@@ -1,7 +1,7 @@
 package com.pan.pandown.web.controller;
 
 
-import com.pan.pandown.dao.DTO.DownloadApiDTO;
+import com.pan.pandown.util.DTO.DownloadApiDTO;
 import com.pan.pandown.service.download.DownloadService;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
@@ -60,7 +60,8 @@ public class DownloadApiController {
     @PostMapping("/getSvipdLink")
     @ApiOperation(value = "直链请求接口",notes = "获取直链",httpMethod = "POST")
     public BaseResponse getSvipdLink(@RequestBody @Valid DownloadApiDTO downloadApiDTO){
-        return new SuccessResponse(null);
+        Object dlink = downloadService.getDlink(downloadApiDTO);
+        return new SuccessResponse(dlink);
     }
 
 }

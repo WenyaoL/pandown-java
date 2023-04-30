@@ -1,4 +1,4 @@
-package com.pan.pandown.dao.DTO;
+package com.pan.pandown.util.DTO;
 
 import lombok.Data;
 
@@ -7,10 +7,10 @@ import javax.validation.constraints.NotBlank;
 /**
  * @author yalier(wenyao)
  * @since 2023/4/28
- * @Description 
+ * @Description
  */
 @Data
-public class UserRegisterDTO {
+public class UserLoginDTO {
 
     @NotBlank(message = "用户名不能为空")
     private String username;

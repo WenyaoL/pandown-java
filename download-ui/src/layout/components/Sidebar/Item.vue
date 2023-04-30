@@ -1,11 +1,3 @@
-<!--<template>
-  <i v-if="icon&&icon.includes('el-icon')" :class="[icon, 'sub-el-icon']"></i>
-  <svg-icon v-else-if="icon && !icon.includes('el-icon')" :icon-class="icon"></svg-icon>
-
-  <span v-slots="title">{{title}}</span>
-
-</template>-->
-
 <script>
 import { h } from 'vue'
 import SvgIcon from '@/components/SvgIcon/index.vue'
@@ -40,23 +32,6 @@ export default {
       return vnodes
     }
   }
-  /*render(context) {
-    const { icon, title } = context.$.props
-    const vnodes = []
-    if (icon) {
-      if (icon.includes('el-icon')) {
-        vnodes.push(<i class={[icon, 'sub-el-icon']} />)
-      } else {
-        vnodes.push(<svg-icon icon-class={icon} />)
-      }
-    }
-
-    if (title) {
-      console.log("存在title==》", this.$slots['default']);
-      vnodes.push(<span v-slots="title">{(title)}</span>)
-    }
-    return vnodes
-  }*/
 }
 </script>
 

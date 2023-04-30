@@ -1,8 +1,9 @@
-package com.pan.pandown.dao.DTO;
+package com.pan.pandown.util.DTO;
 
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
 
 /**
  * @author yalier(wenyao)
@@ -17,4 +18,16 @@ public class DownloadApiDTO {
     private String dir = "";
 
     private Integer page = 0;
+
+    private String sign;
+
+    private Long timestamp;
+
+    private String sekey;
+
+    private ArrayList fsIdList;
+
+    private String primaryid;
+
+    private String uk;
 }

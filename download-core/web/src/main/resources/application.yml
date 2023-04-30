@@ -53,8 +53,11 @@ pandown:
     expireTime: 30
   downloadApi:
     getFileList:
-      url: https://pan.baidu.com/share/wxlist?channel=weixin&version=2.2.2&clienttype=25&web=1
-
+      url: https://pan.baidu.com/share/wxlist
+    getSignAndTime:
+      url: https://pan.baidu.com/share/tplconfig
+    getDlink:
+      url: https://pan.baidu.com/api/sharedownload
 
 server:
   port: 8080
