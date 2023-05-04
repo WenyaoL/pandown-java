@@ -1,6 +1,7 @@
 package com.pan.pandown.api;
 
-import com.pan.pandown.util.DTO.DownloadApiDTO;
+import com.pan.pandown.util.DTO.downloadApi.DownloadApiDTO;
+import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -111,13 +112,13 @@ public class RequestService {
         return exchange;
     }
 
-    public ResponseEntity<Map> requestDlink(DownloadApiDTO downloadApiDTO) {
+    public ResponseEntity<Map> requestDlink(GetDlinkDTO getDlinkDTO) {
         URI uri = UriComponentsBuilder.fromHttpUrl(getDlinkUrl)
                 .queryParam("app_id", 250528)
                 .queryParam("channel", "chunlei")
                 .queryParam("clienttype", 12)
-                .queryParam("sign", downloadApiDTO.getSign())
-                .queryParam("timestamp", downloadApiDTO.getTimestamp())
+                .queryParam("sign", getDlinkDTO.getSign())
+                .queryParam("timestamp", getDlinkDTO.getTimestamp())
                 .queryParam("web", 1)
                 .encode().build().toUri();
 
@@ -125,11 +126,11 @@ public class RequestService {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.set("encrypt", 0);
         body.set("extra", new HashMap<String, String>() {{
-            put("sekey", downloadApiDTO.getSeckey());
+            put("sekey", getDlinkDTO.getSeckey());
         }});
-        body.set("fid_list", '[' + downloadApiDTO.getFs_id() + ']');
-        body.set("primaryid", downloadApiDTO.getShareid());
-        body.set("uk", downloadApiDTO.getUk());
+        body.set("fid_list", getDlinkDTO.getFsIdList());
+        body.set("primaryid", getDlinkDTO.getShareid());
+        body.set("uk", getDlinkDTO.getUk());
         body.set("product", "share");
         body.set("type", "nolimit");
 
@@ -138,6 +139,8 @@ public class RequestService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.69");
         headers.set("Referer", "https://pan.baidu.com/disk/home");
+        //headers.set("Cookie","BDUSS=l-VWV5YjRhd1BkR1BmQk1kR21LME9HVGtUN2RQWDUxazNoQXVpQ0dSOE1GbmhrSVFBQUFBJCQAAAAAAAAAAAEAAAD-Q1grYTIyNjkyNzZlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyJUGQMiVBkTj;");
+
         headers.set("Cookie", "BAIDU_WISE_UID=wapp_1676293108995_690; PANWEB=1; PSTM=1677429102; ZFY=5E:BJorOCHA7Wi5smW4uldUw:AoNlZQUcQkL9Sb2RmVEE:C; BIDUPSID=56C0C0ED879D38BE155BE6D4F2C06331; BAIDUID=30434187CCBE170ED911242A3DEE58A8:FG=1; BAIDUID_BFESS=30434187CCBE170ED911242A3DEE58A8:FG=1; BDCLND=FjsaDdahS3MD8m2e1rB1Gh65rc9cBQL%2BXMs72C1b%2BqI%3D; csrfToken=IYF9E2PTNdgqsCT7Ti9XNIKV; newlogin=1; BDUSS=l-VWV5YjRhd1BkR1BmQk1kR21LME9HVGtUN2RQWDUxazNoQXVpQ0dSOE1GbmhrSVFBQUFBJCQAAAAAAAAAAAEAAAD-Q1grYTIyNjkyNzZlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyJUGQMiVBkTj; BDUSS_BFESS=l-VWV5YjRhd1BkR1BmQk1kR21LME9HVGtUN2RQWDUxazNoQXVpQ0dSOE1GbmhrSVFBQUFBJCQAAAAAAAAAAAEAAAD-Q1grYTIyNjkyNzZlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyJUGQMiVBkTj; STOKEN=30621ea24dd17717b4ccea5483afe0b7cf0a97b70404c449c0cea6497687ecfb; ndut_fmt=6AA7CF2196CC37D632A87EF6AB15A124F5D2010FDB5C70425E00E59F789C8BB9; ab_sr=1.0.1_MmEyODQ0MjI0OTEyY2E2ZjU5YjgxYjY5OGY5ZGFlYTI4YmM5OGMyYjc2MjBhMGY1ZDMwYmQwYzdmYTZhOTQ0OTQ5YjcxYjYyNDQ5Y2E5ZDhkOTkyMzBmYTRiYWQ5NWMyZDEwOTNiN2I4MTVkYzlhMjBlZTkyYjdhOGU0Zjk5N2VkMThmYjdjZmU5Y2ZkM2RhMjJiOGYxZmRlMWI3NmM2MzBmODM2ZDAzOTUwOGNiM2UzNGIyN2EyN2E4OTA2MWU4; PANPSC=10660478181080867701%3AeDVC44VMlkuwpVgviK7pHVcS2d9ns3O5WSpAOtiYnuooK5JNovHgnDJ3TFL5%2B7J8K9sKmG0jScziRClWYPNr2cPKVjvvBMbo2uXu4bOTdjc2jyb7JodIivKBB5%2BWSCTpbaC532AuNi3w0iRW66wpcQelhSA6FDy8slZuWNt1qytZJEFwtmF4sQzCIHAAYipkAsGNr4paWK3EGlSCrabBxOtuQFScyIV%2FkrFWWqsgPEw%3D");
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(body, headers);
 
@@ -146,14 +149,12 @@ public class RequestService {
         return responseEntity;
     }
 
-    public ResponseEntity<String> requestSvipDlink(String dlink) {
-        URI uri = null;
-        try {
-            uri = new URI(dlink);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        String BDUSS = "BDUSS=UzdU1nUG1qYWJPTEVQfmRocmpXVnZxYn5Ea2ZDZVlTLWx-VjBNZnMwNFhtdE5pRVFBQUFBJCQAAAAAAAAAAAEAAADa8x10TW92ZUFib3kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    public ResponseEntity<String> requestSvipDlink(String dlink,String BDUSS) {
+        URI uri = UriComponentsBuilder.fromHttpUrl(dlink)
+                .build()
+                .toUri();
+
+        BDUSS = "BDUSS=UzdU1nUG1qYWJPTEVQfmRocmpXVnZxYn5Ea2ZDZVlTLWx-VjBNZnMwNFhtdE5pRVFBQUFBJCQAAAAAAAAAAAEAAADa8x10TW92ZUFib3kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABcNrGIXDaxiQ3;";
         HttpHeaders headers = new HttpHeaders();
         headers.set("User-Agent", "LogStatistic");
         headers.set("Cookie", BDUSS);

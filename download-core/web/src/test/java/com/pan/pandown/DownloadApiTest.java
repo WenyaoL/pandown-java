@@ -1,12 +1,18 @@
 package com.pan.pandown;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pan.pandown.api.RequestService;
 import com.pan.pandown.service.download.DownloadService;
+import com.pan.pandown.util.DTO.downloadApi.DownloadApiDTO;
+import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
 import com.pan.pandown.web.PandownApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -20,7 +26,8 @@ public class DownloadApiTest {
     @Autowired
     private DownloadService downloadService;
 
-
+    @Autowired
+    private RequestService requestService;
 
     @Test
     public void testDownloadService() throws Exception {
@@ -44,5 +51,34 @@ public class DownloadApiTest {
 
         Map signAndTime = downloadService.getSignAndTime(surl);
         System.out.println(signAndTime);
+    }
+
+    @Test
+    public void testSvipDlink(){
+        String surl = "1xlNlsoQwb--rJdefwslqrQ";
+        String pwd = "9r7c";
+
+        Map signAndTime = downloadService.getSignAndTime(surl);
+        System.out.println(signAndTime);
+        Object timestamp = signAndTime.get("timestamp");
+        Object sign = signAndTime.get("sign");
+
+        GetDlinkDTO downloadApiDTO = new GetDlinkDTO();
+        downloadApiDTO.setFsIdList(new ArrayList(){{add("292608207123055");}});
+
+        downloadApiDTO.setShareid("59930918115");
+        downloadApiDTO.setUk("1127198855");
+        downloadApiDTO.setTimestamp(Long.parseLong(timestamp.toString()));
+        downloadApiDTO.setSign(sign.toString());
+        downloadApiDTO.setSeckey("FjsaDdahS3NCh18koEgh9uB1XztK9yUr4f9nt6ydoLE~");
+        ResponseEntity<Map> responseEntity = requestService.requestDlink(downloadApiDTO);
+        System.out.println(responseEntity);
+        List dlink = (List)downloadService.getDlink(downloadApiDTO);
+        Map o = (Map) dlink.get(0);
+
+        System.out.println(o.get("dlink"));
+
+        Object dlink1 = downloadService.getSvipDlink(o.get("dlink").toString());
+        System.out.println(dlink1);
     }
 }

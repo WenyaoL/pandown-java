@@ -1,6 +1,8 @@
-package com.pan.pandown.util.DTO;
+package com.pan.pandown.util.DTO.downloadApi;
 
 import lombok.Data;
+
+import java.util.ArrayList;
 
 /**
  * @author yalier(wenyao)
@@ -22,7 +24,7 @@ public class DownloadApiDTO {
 
     private String seckey;
 
-    private String fs_id;
+    private ArrayList fsIdList;
 
     private String shareid;
 

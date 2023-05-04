@@ -1,21 +1,32 @@
 package com.pan.pandown.service.download;
 
 import com.pan.pandown.api.RequestService;
-import com.pan.pandown.util.DTO.DownloadApiDTO;
+import com.pan.pandown.dao.entity.DbtableSvip;
+import com.pan.pandown.service.IDbtableSvipService;
+import com.pan.pandown.util.DTO.downloadApi.DownloadApiDTO;
+import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
+import com.pan.pandown.util.redis.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class DownloadService {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private IDbtableSvipService dbtableSvipService;
+
+    @Autowired
+    private RedisService redisService;
+
+    private final String PANDOWN_SVIP = "Pandown_svip:";
+    private final String PANDOWN_SVIP_IDX = "for_idx";
+    private final String PANDOWN_SVIP_LIST = "svip_list";
 
     /**
      * 返回所有分享信息
@@ -98,15 +109,48 @@ public class DownloadService {
 
     }
 
-
-    public Object getDlink(DownloadApiDTO downloadApiDTO){
-        ResponseEntity<Map> responseEntity = requestService.requestDlink(downloadApiDTO);
+    /**
+     * 下载链接获取
+     * @param getDlinkDTO
+     * @return
+     */
+    public Object getDlink(GetDlinkDTO getDlinkDTO){
+        ResponseEntity<Map> responseEntity = requestService.requestDlink(getDlinkDTO);
         return responseEntity.getBody().getOrDefault("list",null);
     }
 
+    /**
+     * svip下载链接获取
+     * @param dlink
+     * @return
+     */
+    public String getSvipDlink(String dlink){
+        if(!redisService.hasKey(PANDOWN_SVIP+PANDOWN_SVIP_LIST)){
+            redisService.set(PANDOWN_SVIP + PANDOWN_SVIP_IDX,0);
+            List<DbtableSvip> list = dbtableSvipService.list();
+            redisService.lSet(PANDOWN_SVIP + PANDOWN_SVIP_LIST, (List)list);
+        }
 
-    public Object getSvipDlink(String dlink){
-        ResponseEntity<String> responseEntity = requestService.requestSvipDlink(dlink);
+        long incr = redisService.incr(PANDOWN_SVIP + PANDOWN_SVIP_IDX,1);
+        long l = redisService.lGetListSize(PANDOWN_SVIP + PANDOWN_SVIP_LIST);
+        DbtableSvip dbtableSvip = (DbtableSvip) redisService.lGetIndex(PANDOWN_SVIP + PANDOWN_SVIP_LIST,incr%l);
+
+        ResponseEntity<String> responseEntity = requestService.requestSvipDlink(dlink,dbtableSvip.getSvipBduss());
         return responseEntity.getHeaders().get("Location").get(0);
+    }
+
+    /**
+     * svip下载链接获取
+     * @param dlinkList
+     * @return
+     */
+    public List getSvipDlink(List dlinkList){
+        List result = new ArrayList();
+        for (int i = 0; i < dlinkList.size(); i++) {
+            String dlink = (String)dlinkList.get(i);
+            String location = this.getSvipDlink(dlink);
+            result.add(location);
+        }
+        return result;
     }
 }
