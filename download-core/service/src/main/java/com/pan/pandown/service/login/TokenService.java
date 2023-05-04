@@ -5,7 +5,6 @@ import com.auth0.jwt.interfaces.Claim;
 import com.pan.pandown.dao.model.LoginUser;
 import com.pan.pandown.util.redis.RedisService;
 import com.pan.pandown.util.security.JWTService;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

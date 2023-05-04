@@ -2,15 +2,12 @@ package com.pan.pandown.util.DTO;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import java.util.ArrayList;
-
 /**
  * @author yalier(wenyao)
  */
 @Data
 public class DownloadApiDTO {
-    @NotBlank(message = "must has surl")
+    // @NotBlank(message = "must has surl")
     private String surl;
 
     private String pwd;
@@ -23,11 +20,11 @@ public class DownloadApiDTO {
 
     private Long timestamp;
 
-    private String sekey;
+    private String seckey;
 
-    private ArrayList fsIdList;
+    private String fs_id;
 
-    private String primaryid;
+    private String shareid;
 
     private String uk;
 }

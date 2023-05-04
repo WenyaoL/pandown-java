@@ -2,16 +2,11 @@ package com.pan.pandown;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pan.pandown.service.download.DownloadService;
-import com.pan.pandown.util.security.JWTService;
 import com.pan.pandown.web.PandownApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 

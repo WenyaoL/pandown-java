@@ -1,7 +1,7 @@
 package com.pan.pandown.dao.mapper;
 
-import com.pan.pandown.dao.entity.DbtableSvip;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.pan.pandown.dao.entity.DbtableSvip;
 
 /**
  * <p>
