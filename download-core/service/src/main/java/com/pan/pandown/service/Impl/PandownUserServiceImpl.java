@@ -1,10 +1,10 @@
 package com.pan.pandown.service.Impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pan.pandown.dao.entity.PandownUser;
 import com.pan.pandown.dao.mapper.PandownUserMapper;
 import com.pan.pandown.dao.model.LoginUser;
 import com.pan.pandown.service.IPandownUserService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pan.pandown.service.login.TokenService;
 import com.pan.pandown.util.constants.RegisterCode;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
@@ -16,10 +16,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 

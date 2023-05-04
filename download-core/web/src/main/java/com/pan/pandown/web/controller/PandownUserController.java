@@ -1,9 +1,9 @@
 package com.pan.pandown.web.controller;
 
 
+import com.pan.pandown.service.IPandownUserService;
 import com.pan.pandown.util.DTO.UserLoginDTO;
 import com.pan.pandown.util.DTO.UserRegisterDTO;
-import com.pan.pandown.service.IPandownUserService;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
 import com.pan.pandown.util.constants.RegisterCode;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -54,4 +53,6 @@ public class PandownUserController {
     public BaseResponse userInfo(){
         return new SuccessResponse();
     }
+
+
 }

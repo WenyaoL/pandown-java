@@ -3,9 +3,13 @@ package com.pan.pandown.service.download;
 import com.pan.pandown.api.RequestService;
 import com.pan.pandown.util.DTO.DownloadApiDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class DownloadService {
@@ -100,4 +104,9 @@ public class DownloadService {
         return responseEntity.getBody().getOrDefault("list",null);
     }
 
+
+    public Object getSvipDlink(String dlink){
+        ResponseEntity<String> responseEntity = requestService.requestSvipDlink(dlink);
+        return responseEntity.getHeaders().get("Location").get(0);
+    }
 }

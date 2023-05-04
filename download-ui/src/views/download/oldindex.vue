@@ -196,7 +196,7 @@ export default {
               shareid: row.shareid, // 假设这里是 shareid 属性的值
               uk: row.uk // 假设这里是 uk 属性的值
             }
-            const response = await baiduapi.get('/getsvipdlink', form, 'http://127.0.0.1:8010', {
+            const response = await baiduapi.get('/getSvipDlink', form, 'http://127.0.0.1:8010', {
               headers: {
                 'Content-Type': 'application/json'
               }
@@ -400,7 +400,7 @@ export default {
         uk: uk
       }
       try {
-        const response = await baiduapi.get('/getsvipdlink', form, process.env.VUE_APP_BASE_API, {
+        const response = await baiduapi.get('/getSvipDlink', form, process.env.VUE_APP_BASE_API, {
           headers: {
             'Content-Type': 'application/json'
           }
