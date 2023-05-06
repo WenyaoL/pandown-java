@@ -75,10 +75,8 @@ public class DownloadApiTest {
         System.out.println(responseEntity);
         List dlink = (List)downloadService.getDlink(downloadApiDTO);
         Map o = (Map) dlink.get(0);
-
-        System.out.println(o.get("dlink"));
-
-        Object dlink1 = downloadService.getSvipDlink(o.get("dlink").toString());
+        Object dlink1 = downloadService.getSvipDlink(dlink);
+        // Object dlink1 = downloadService.getSvipDlink(o.get("dlink").toString());
         System.out.println(dlink1);
     }
 }
