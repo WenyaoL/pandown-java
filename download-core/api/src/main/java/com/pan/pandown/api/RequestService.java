@@ -1,6 +1,5 @@
 package com.pan.pandown.api;
 
-import com.pan.pandown.util.DTO.downloadApi.DownloadApiDTO;
 import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -149,12 +148,13 @@ public class RequestService {
         return responseEntity;
     }
 
-    public ResponseEntity<String> requestSvipDlink(String dlink,String BDUSS) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(dlink)
-                .build()
-                .toUri();
-
-        BDUSS = "BDUSS=UzdU1nUG1qYWJPTEVQfmRocmpXVnZxYn5Ea2ZDZVlTLWx-VjBNZnMwNFhtdE5pRVFBQUFBJCQAAAAAAAAAAAEAAADa8x10TW92ZUFib3kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABcNrGIXDaxiQ3;";
+    public ResponseEntity<String> requestSvipDlink(String dlink, String BDUSS) {
+        URI uri = null;
+        try {
+            uri = new URI(dlink);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.set("User-Agent", "LogStatistic");
         headers.set("Cookie", BDUSS);

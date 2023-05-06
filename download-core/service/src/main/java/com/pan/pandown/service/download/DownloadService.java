@@ -147,7 +147,7 @@ public class DownloadService {
     public List getSvipDlink(List dlinkList){
         List result = new ArrayList();
         for (int i = 0; i < dlinkList.size(); i++) {
-            String dlink = (String)dlinkList.get(i);
+            String dlink = ((LinkedHashMap) dlinkList.get(i)).get("dlink").toString();
             String location = this.getSvipDlink(dlink);
             result.add(location);
         }
