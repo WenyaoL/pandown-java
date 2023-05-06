@@ -65,4 +65,8 @@ service.interceptors.response.use(
   }
 )
 
+export const simpleInstance = axios.create()
+
+
+
 export default service

@@ -1,12 +1,43 @@
-
-
 <template>
   <div class="link-container">
-    <div class="button-group">
-      <el-button size="small" class="button-item" type="primary" @click="downloadSelected">下载所选文件</el-button>
-      <el-button size="small" class="button-item" type="primary" @click="showAria2Dialog">Aria2配置</el-button>
-      <el-button size="small" class="button-item" type="primary" @click="previousStep">上一级</el-button>
-    </div>
+    <el-collapse v-model="activeCollapseNames" class="collapse-panel">
+      <el-collapse-item name="Option">
+        <template #title>
+          <span class="collapse-title">操作: </span><el-icon class="header-icon"><info-filled /></el-icon>
+        </template>
+        <div class="button-group">
+          <el-button-group>
+            <el-button size="small" class="button-item" type="primary" @click="previousStep">上一级</el-button>
+            <el-button size="small" class="button-item" type="primary" @click="toRootStep">返回根目录</el-button>
+          </el-button-group>
+
+          <el-button-group class="setting-button-group">
+            <el-button size="small" class="button-item" type="primary" @click="downloadSelected">下载所选文件</el-button>
+            <el-button size="small" class="button-item" type="primary"
+              @click="aria2SettingDialogVisible = true">Aria2配置</el-button>
+          </el-button-group>
+        </div>
+      </el-collapse-item>
+
+      <el-collapse-item title="分享描述" name="Describe" :size='"small"'>
+        <template #title>
+          <span class="collapse-title">分享描述: </span><el-icon class="header-icon"><info-filled /></el-icon>
+        </template>
+
+        <el-row>
+          <el-col :span="12"><span class="des-item">分享者: </span>{{ sharerInfo.uname }}<el-avatar :size="18"
+              :src="sharerInfo.avatar" /></el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12"><span class="des-item">分类标题: </span>{{ sharerInfo.title }}</el-col>
+          <el-col :span="12"><span class="des-item">分享时间: </span>{{ sharerInfo.dateStr }}</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12"><span class="des-item">过期类型: </span>{{ sharerInfo.expiredStr }}</el-col>
+        </el-row>
+      </el-collapse-item>
+
+    </el-collapse>
     <el-table v-loading="listLoading" :data="list" element-loading-text="Loading" highlight-current-row
       @selection-change="handleSelectionChange">
 
@@ -44,14 +75,48 @@
 
       <el-table-column label="Download Link">
         <template #default="scope">
-          <el-button v-if="scope.row.isdir" type="success" :icon="Link" size="small" plain
-            @click="handleFileClick(scope.row)">open</el-button>
-          <el-button v-else type="success" :icon="Download" size="small" plain
-            @click="handleFileClick(scope.row)">download</el-button>
+          <el-button v-if="scope.row.isdir" type="primary" link size="small"
+            @click="handleFileClick(scope.row)">打开</el-button>
+          <el-button v-else type="primary" link size="small" @click="handleFileClick(scope.row)">下载</el-button>
         </template>
       </el-table-column>
 
     </el-table>
+
+    <el-dialog v-model="aria2SettingDialogVisible" title="配置 Aria2">
+      <el-form :model="aria2Setting" :label-width='"120px"'>
+        <el-form-item label="RPC 地址">
+          <el-input v-model="aria2Setting.aria2RpcUrl" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="RPC 密钥">
+          <el-input v-model="aria2Setting.aria2RpcSecret" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="下载目录">
+          <el-input v-model="aria2Setting.saveDir" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="aria2SettingDialogVisible = false">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="downloadDialogVisible" title="下载当前文件">
+
+      <p>下载提示:将提供Aria2下载,IDM下载,浏览器下载。(如果通过复制链接去下载，需修改浏览器 User Agent为LogStatistic 后下载。)</p>
+      <el-button type="primary" link size="small" @click="copyLink(currDownloadList[0].svipdlink)">复制链接</el-button>
+      <el-divider />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="downloadFileByAria2()">浏览器下载</el-button>
+          <el-button type="primary" @click="downloadFileByIDM()">IDM下载</el-button>
+          <el-button type="primary" @click="downloadFileByCommon()">Aria2下载</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+
   </div>
 </template>
 
@@ -59,9 +124,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { formatSize } from '@/utils/format'
-import { getShareDir, getSignAndTime, getsvipdlink } from '@/api/download'
+import { getShareDir, getSignAndTime, getSvipDlink } from '@/api/download'
+import { simpleInstance } from '@/api/request'
 import path from 'path-browserify'
-import { Download,Link } from '@element-plus/icons-vue'
+import { InfoFilled } from '@element-plus/icons-vue'
 import { getSvgByName } from './svgData'
 
 interface ShareFile {
@@ -73,7 +139,8 @@ interface ShareFile {
   server_filename: string,
   uk: string,
   shareid: number,
-  seckey: any
+  seckey: any,
+  svipdlink?: any,
 }
 
 const props = defineProps<{}>()
@@ -81,25 +148,42 @@ const props = defineProps<{}>()
 const store = useStore()
 const surl = ref(store.state.surl)
 const pwd = ref(store.state.pwd)
-const currPath = ref('')
-const listLoading = ref(false)
+const currPath = ref('') //当前路径
+const listLoading = ref(false) //列表加载状态
 const list = ref<ShareFile[]>([]) //当前数据列表
-const selectedList = ref<ShareFile[]>([]) //当前
-const aria2DialogVisible = ref(false)
-const dialogVisible = ref(false)
-const sign = ref('')
-const timestamp = ref('')
-const form = reactive({
+const selectedList = ref<ShareFile[]>([]) //当前选中数据
+const currDownloadList = ref<ShareFile[]>([]) //当前要下载的文件
+
+const activeCollapseNames = ref<String[]>([])  //打开的折叠板
+
+
+const sharerInfo = reactive({
+  dateStr: 'null',
+  expiredStr: 'null',
+  uname: '',
+  title: '',
+  avatar: ''
+})
+
+const aria2SettingDialogVisible = ref(false)
+const downloadDialogVisible = ref(false)
+
+const aria2Setting = reactive({
   aria2RpcUrl: localStorage.getItem('aria2RpcUrl') || 'http://localhost:6800/jsonrpc',
   aria2RpcSecret: localStorage.getItem('aria2RpcSecret') || 'Aria2 的 RPC 密钥',
   saveDir: localStorage.getItem('saveDir') || '/path/to/download/folder'
 })
 
+
+/**
+ * 获取文件icon
+ * @param fileName 
+ * @param isdir 
+ */
 const getFileIcon = (fileName: string, isdir: boolean) => {
   const svg = getSvgByName(fileName, isdir)
   return svg.icon
 }
-
 
 /**
  * 获取时间搓和签名
@@ -107,44 +191,33 @@ const getFileIcon = (fileName: string, isdir: boolean) => {
  * @param uk 
  * @param shareid 
  */
-const fetchSignAndTime = (surl: string, uk: string, shareid: any) => {
-  if (!surl || !uk || !shareid) {
-    return
-    //throw new Error('Invalid arguments: surl, uk and shareid are required')
-  }
+const fetchSignAndTime = async (surl: string, uk: string, shareid: any) => {
   const form = {
     surl: surl,
     uk: uk,
     shareid: shareid
   }
-  getSignAndTime(form).then(response => {
-    const data = response.data
-    sign.value = data.sign
-    timestamp.value = data.timestamp
-  })
+  const response = await getSignAndTime(form)
+
+  const { sign, timestamp } = response.data
+  return { sign, timestamp }
 }
 
 
 /**
- * 数据抓取
- * @param result 
+ * 数据解析，从后端给定是数据中抓取分享文件信息
+ * @param result 给定数据
  */
-const fetchData = (result?: any) => {
-  listLoading.value = true
-  result = result || store.state.pandownData
-
+const parseData = (result?: any) => {
   if (!result) {
-    listLoading.value = false
     return
   }
   const { uk, shareid, seckey } = result
-  fetchSignAndTime(surl.value, uk, shareid)
+
   const resultList = result.list as any[]
   if (!resultList) {
-    listLoading.value = false
     return
   }
-
   const fileList: ShareFile[] = []
   resultList.forEach(file => {
     const { fs_id, isdir, md5, path, size, server_filename } = file
@@ -160,15 +233,44 @@ const fetchData = (result?: any) => {
       seckey,
     })
   })
-  list.value = fileList
+  return fileList
+}
+
+/**
+ * 加载分享数据
+ */
+const loadData = () => {
+  listLoading.value = true
+  const pandownData = store.state.pandownData
+  list.value = parseData(pandownData) as any
   listLoading.value = false
 }
 
 /**
- * 目录解析
+ * 加载分享者数据
+ */
+const loadSharerData = () => {
+  const data = store.state.pandownData
+  if (!data) return
+  const avatar = data?.user?.avatar
+  const { uname, title, link_ctime, expired_type } = data
+  const ct = new Date().getTime() - link_ctime
+
+  //fill sharerInfo
+  sharerInfo.dateStr = new Date(ct).toLocaleDateString()
+  sharerInfo.expiredStr = expired_type == 0 ? "永久有效" : "非永久有效"
+  sharerInfo.uname = uname
+  sharerInfo.title = title
+  sharerInfo.avatar = avatar
+}
+
+
+
+/**
+ * 打开目录
  * @param path 
  */
-const directoryparse = async (path: string) => {
+const openDirectory = async (path: string) => {
   if (typeof path !== 'string' || !path.trim()) {
     return
     //throw new Error('directoryparse():Invalid argument: path should be non-empty string')
@@ -182,54 +284,147 @@ const directoryparse = async (path: string) => {
   getShareDir(form).then(response => {
     const data = response.data
     currPath.value = path
-    fetchData(data)
+    list.value = parseData(data) as any
   })
+}
+
+const fetchSvipDlink = async (form: any) => {
+  const response = await getSvipDlink(form)
+  const data = response.data
+  if (!data || data.length == 0) return
+  return data
 }
 
 /**
- * 文件解析
- * @param fs_id 
- * @param seckey 
- * @param shareid 
- * @param uk 
+ * 文件下载
  */
-const fileparse = (fs_id: any, seckey: any, shareid: any, uk: string) => {
-  if (!fs_id || !seckey || !shareid || !uk) {
-    return
-    //throw new Error('fileparse():Invalid arguments: fs_id, seckey, shareid and uk are required')
-  }
+const downloadFile = async (row: ShareFile) => {
+  //downloadDialogVisible.value = true
+  const { fs_id, seckey, shareid, uk } = row
+
+  const signAndTime = await fetchSignAndTime(surl.value, uk, shareid)
+
+  if (!signAndTime) return
+  const { sign, timestamp } = signAndTime
+
   const form = {
-    fs_id: fs_id,
-    timestamp: timestamp.value,
-    sign: sign.value,
-    seckey: seckey,
-    shareid: shareid,
+    fsIdList: [fs_id],
+    timestamp,
+    sign,
+    seckey,
+    shareid,
     uk: uk
   }
+  const svipDlinkList = await fetchSvipDlink(form)
+  if (!svipDlinkList || svipDlinkList.length == 0) return
 
-  getsvipdlink(form).then(response => {
-    const data = response.data
+  row.svipdlink = svipDlinkList[0]
+  currDownloadList.value = [row]
+  downloadDialogVisible.value = true
+  return
+}
+
+/**
+ * aria2下载
+ * @param downloadUrl 
+ * @param path 
+ * @param server_filename 
+ */
+const aria2Download = async (downloadUrl: string, path: string, server_filename: string) => {
+  if (!downloadUrl) {
+    throw new Error('Invalid argument: downloadUrl should be a non-empty string')
+  }
+  const { aria2RpcUrl, aria2RpcSecret, saveDir } = aria2Setting
+
+  try {
+    const response = await fetch(aria2RpcUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: '1',
+        method: 'aria2.addUri',
+        params: [
+          'token:' + aria2RpcSecret,
+          [downloadUrl],
+          {
+            'header': ['User-Agent: LogStatistic'],
+            'dir': saveDir + path,
+            'max-connection-per-server': '16',
+            'out': server_filename
+          }
+        ]
+      })
+    })
+    const data = await response.json()
+    console.log('Aria2 下载结果：', data)
+  } catch (error) {
+    console.error('Aria2 下载出错：', error)
+  }
+
+}
+
+/**
+ * 普通浏览器下载
+ * @param downloadUrl 
+ * @param path 
+ * @param server_filename 
+ */
+const commonDownload = (downloadUrl: string, path: string, server_filename: string) => {
+  simpleInstance.request({
+    url: downloadUrl,
+    method: "get",
+    headers: {
+      'User-Agent': 'LogStatistic'
+    },
+    responseType: 'blob'
+  }).then(response => {
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', path+server_filename);
+    document.body.appendChild(link);
+    link.click();
   })
 }
 
+const IDMDownload = (downloadUrl: string, path: string, server_filename: string) => {
+
+}
+
+const downloadFileByAria2 = () => {
+  currDownloadList.value.forEach(row => {
+    aria2Download(row.svipdlink, row.path, row.server_filename)
+  })
+
+}
+const downloadFileByIDM = () =>{
+
+}
+
+const downloadFileByCommon = () =>{
+
+}
 /**
  * 文件点击
  * @param row 
  */
 const handleFileClick = (row: ShareFile) => {
-  try {
-    if (!row) {
-      return
-      //throw new Error('Invalid argument: row is required')
-    }
-    if (row.isdir == 1) { // 是目录
-      directoryparse(row.path)
-    } else { // 单文件，请求svipdlink
-      fileparse(row.fs_id, row.seckey, row.shareid, row.uk)
-    }
-  } catch (error) {
-    console.error(error)
+  if (!row) {
+    return
   }
+
+  if (row.isdir == 1) { // 是目录
+    openDirectory(row.path)
+  } else { // 单文件，请求svipdlink
+    downloadFile(row)
+  }
+}
+
+const copyLink = (link: string) => {
+  window.navigator.clipboard.writeText(link)
 }
 
 const handleSelectionChange = (val: ShareFile[]) => {
@@ -238,18 +433,21 @@ const handleSelectionChange = (val: ShareFile[]) => {
 
 const downloadSelected = () => {
   // 获取选中行的数据并进行相应处理
-}
-
-const showAria2Dialog = () => {
 
 }
+
 
 const previousStep = () => {
 
 }
 
+const toRootStep = () => {
+
+}
+
 onMounted(() => {
-  fetchData()
+  loadData()
+  loadSharerData()
 })
 
 </script>
@@ -288,5 +486,20 @@ onMounted(() => {
 .des-item {
   font-weight: bold;
   color: #646569;
+}
+
+.collapse-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #646569;
+}
+
+.collapse-panel {
+  padding-left: 30px;
+
+}
+
+.setting-button-group {
+  margin-left: 40px;
 }
 </style>

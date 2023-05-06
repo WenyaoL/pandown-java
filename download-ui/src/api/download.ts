@@ -17,7 +17,7 @@ export function getSignAndTime(data:any){
 }
 
 
-export function getsvipdlink(data:any){
+export function getSvipDlink(data:any){
   return request({
     url:'api/getSvipDlink',
     method: 'post',

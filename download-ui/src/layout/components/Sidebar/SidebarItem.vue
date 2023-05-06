@@ -63,8 +63,6 @@ export default {
     const hasOneShowingChild = (children:any[] = [], parent:any)=>{
 
       const showingChildren = children.filter(item => {
-        console.log(item.meta.title);
-        
         if (item.hidden) {
           return false
         } else {
