@@ -109,9 +109,9 @@
       <el-divider />
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="downloadFileByAria2()">浏览器下载</el-button>
+          <el-button type="primary" @click="downloadFileByCommon()">浏览器下载</el-button>
           <el-button type="primary" @click="downloadFileByIDM()">IDM下载</el-button>
-          <el-button type="primary" @click="downloadFileByCommon()">Aria2下载</el-button>
+          <el-button type="primary" @click="downloadFileByAria2()">Aria2下载</el-button>
         </span>
       </template>
     </el-dialog>
