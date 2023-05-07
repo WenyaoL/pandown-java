@@ -1,14 +1,10 @@
 /**
- * Created by PanJiaChen on 16/11/18.
- */
-
-/**
  * Parse the time to string
  * @param {(Object|string|number)} time
  * @param {string} cFormat
  * @returns {string | null}
  */
-export function parseTime(time, cFormat) {
+export function parseTime(time:any, cFormat:string) {
   if (arguments.length === 0 || !time) {
     return null
   }
@@ -41,7 +37,7 @@ export function parseTime(time, cFormat) {
     i: date.getMinutes(),
     s: date.getSeconds(),
     a: date.getDay()
-  }
+  } as any
   const time_str = format.replace(/{([ymdhisa])+}/g, (result, key) => {
     const value = formatObj[key]
     // Note: getDay() returns 0 on Sunday
@@ -56,16 +52,16 @@ export function parseTime(time, cFormat) {
  * @param {string} option
  * @returns {string}
  */
-export function formatTime(time, option) {
+export function formatTime(time:number|string, option:string) {
   if (('' + time).length === 10) {
-    time = parseInt(time) * 1000
+    time = parseInt(time as string) * 1000
   } else {
     time = +time
   }
   const d = new Date(time)
   const now = Date.now()
 
-  const diff = (now - d) / 1000
+  const diff = (now - d.getTime()) / 1000
 
   if (diff < 30) {
     return '刚刚'
@@ -98,12 +94,12 @@ export function formatTime(time, option) {
  * @param {string} url
  * @returns {Object}
  */
-export function param2Obj(url) {
+export function param2Obj(url:string) {
   const search = decodeURIComponent(url.split('?')[1]).replace(/\+/g, ' ')
   if (!search) {
     return {}
   }
-  const obj = {}
+  const obj = {} as any
   const searchArr = search.split('&')
   searchArr.forEach(v => {
     const index = v.indexOf('=')
@@ -114,4 +110,16 @@ export function param2Obj(url) {
     }
   })
   return obj
+}
+
+export function formatSize(size:number) {
+  if (size == 0) return '—'
+  // 将字节数转换为 GB 或 MB，并保留两位小数
+  if (size < 1024 * 1024) {
+      return (size / 1024).toFixed(2) + ' KB'
+  } else if (size < 1024 * 1024 * 1024) {
+      return (size / (1024 * 1024)).toFixed(2) + ' MB'
+  } else {
+      return (size / (1024 * 1024 * 1024)).toFixed(2) + ' GB'
+  }
 }

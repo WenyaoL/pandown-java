@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import path from 'path-browserify'
-import { isExternal } from '@/utils/validate.js'
+import { isExternal } from '@/utils/validate'
 import Item from './Item.vue'
 import AppLink from './Link.vue'
 import {ref,computed,onMounted} from 'vue'
@@ -58,7 +58,7 @@ export default {
     const store = useStore()
     const device = computed(()=>store.state.app.device)
     const onlyOneChild = ref<any>(null)
-
+    
     
     const hasOneShowingChild = (children:any[] = [], parent:any)=>{
 

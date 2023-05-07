@@ -25,15 +25,17 @@
         </template>
 
         <el-row>
-          <el-col :span="12"><span class="des-item">分享者: </span>{{ sharerInfo.uname }}<el-avatar :size="18"
+          <el-col :span="12"><span class="des-item">分享者: </span>{{ sharerInfo.uname }}<el-avatar :size="18" class="avatar"
               :src="sharerInfo.avatar" /></el-col>
         </el-row>
         <el-row>
           <el-col :span="12"><span class="des-item">分类标题: </span>{{ sharerInfo.title }}</el-col>
-          <el-col :span="12"><span class="des-item">分享时间: </span>{{ sharerInfo.dateStr }}</el-col>
+          <el-col :span="6"><span class="des-item">分享时间: </span>{{ sharerInfo.dateStr }}</el-col>
+          <el-col :span="6"><span class="des-item">过期类型: </span>{{ sharerInfo.expiredStr }}</el-col>
         </el-row>
         <el-row>
-          <el-col :span="12"><span class="des-item">过期类型: </span>{{ sharerInfo.expiredStr }}</el-col>
+          <el-col :span="12"><span class="des-item">surl: </span>{{ surl }}</el-col>
+          <el-col :span="12"><span class="des-item">提取码: </span>{{ pwd }}</el-col>
         </el-row>
       </el-collapse-item>
 
@@ -64,7 +66,7 @@
 
       <el-table-column label="Name" width="600">
         <template #default="scope">
-          <span class="file-svg" v-html="getFileIcon(scope.row.server_filename, scope.row.isdir)" />
+          <span class="file-svg"><component :is="getFileIcon(scope.row.server_filename, scope.row.isdir)" /></span>
           <a class="file-name" @click.prevent="handleFileClick(scope.row)">{{ scope.row.server_filename }}</a>
         </template>
       </el-table-column>
@@ -73,7 +75,7 @@
         <template #default="scope">{{ formatSize(scope.row.size) }}</template>
       </el-table-column>
 
-      <el-table-column label="Download Link">
+      <el-table-column label="操作">
         <template #default="scope">
           <el-button v-if="scope.row.isdir" type="primary" link size="small"
             @click="handleFileClick(scope.row)">打开</el-button>
@@ -97,19 +99,18 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="aria2SettingDialogVisible = false">确定</el-button>
+          <el-button @click="aria2SettingDialogVisible = false" type="primary">确定</el-button>
         </span>
       </template>
     </el-dialog>
 
     <el-dialog v-model="downloadDialogVisible" title="下载当前文件">
 
-      <p>下载提示:将提供Aria2下载,IDM下载,浏览器下载。(如果通过复制链接去下载，需修改浏览器 User Agent为LogStatistic 后下载。)</p>
+      <p>下载提示:将提供Aria2下载,IDM下载,浏览器下载。(通过复制链接去下载，需修改浏览器 User Agent为LogStatistic 后下载。)</p>
       <el-button type="primary" link size="small" @click="copyLink(currDownloadList[0].svipdlink)">复制链接</el-button>
       <el-divider />
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="downloadFileByCommon()">浏览器下载</el-button>
           <el-button type="primary" @click="downloadFileByIDM()">IDM下载</el-button>
           <el-button type="primary" @click="downloadFileByAria2()">Aria2下载</el-button>
         </span>
@@ -121,14 +122,14 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted,computed } from 'vue'
 import { useStore } from 'vuex'
-import { formatSize } from '@/utils/format'
+import { formatSize } from '@/utils'
 import { getShareDir, getSignAndTime, getSvipDlink } from '@/api/download'
 import { simpleInstance } from '@/api/request'
 import path from 'path-browserify'
 import { InfoFilled } from '@element-plus/icons-vue'
-import { getSvgByName } from './svgData'
+import { getSvgByName } from '@/components/StaticIcon/svgData'
 
 interface ShareFile {
   fs_id: any,
@@ -180,8 +181,8 @@ const aria2Setting = reactive({
  * @param fileName 
  * @param isdir 
  */
-const getFileIcon = (fileName: string, isdir: boolean) => {
-  const svg = getSvgByName(fileName, isdir)
+ const getFileIcon = (fileName: string, isdir: number) => {
+  const svg = getSvgByName(fileName, isdir==1?true:false)
   return svg.icon
 }
 
@@ -254,10 +255,9 @@ const loadSharerData = () => {
   if (!data) return
   const avatar = data?.user?.avatar
   const { uname, title, link_ctime, expired_type } = data
-  const ct = new Date().getTime() - link_ctime
 
   //fill sharerInfo
-  sharerInfo.dateStr = new Date(ct).toLocaleDateString()
+  sharerInfo.dateStr = new Date(link_ctime*1000).toLocaleDateString()
   sharerInfo.expiredStr = expired_type == 0 ? "永久有效" : "非永久有效"
   sharerInfo.uname = uname
   sharerInfo.title = title
@@ -367,7 +367,7 @@ const aria2Download = async (downloadUrl: string, path: string, server_filename:
 }
 
 /**
- * 普通浏览器下载
+ * 普通浏览器下载(因百度跨域限制和浏览器拒绝设置User-Agent的安全行为，该方法废弃)
  * @param downloadUrl 
  * @param path 
  * @param server_filename 
@@ -377,14 +377,15 @@ const commonDownload = (downloadUrl: string, path: string, server_filename: stri
     url: downloadUrl,
     method: "get",
     headers: {
-      'User-Agent': 'LogStatistic'
+      'User-Agent': 'LogStatistic',
     },
+    withCredentials: true,
     responseType: 'blob'
   }).then(response => {
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', path+server_filename);
+    link.setAttribute('download', path + server_filename);
     document.body.appendChild(link);
     link.click();
   })
@@ -400,12 +401,14 @@ const downloadFileByAria2 = () => {
   })
 
 }
-const downloadFileByIDM = () =>{
+const downloadFileByIDM = () => {
 
 }
 
-const downloadFileByCommon = () =>{
-
+const downloadFileByCommon = () => {
+  currDownloadList.value.forEach(row => {
+    commonDownload(row.svipdlink, row.path, row.server_filename)
+  })
 }
 /**
  * 文件点击
@@ -438,11 +441,19 @@ const downloadSelected = () => {
 
 
 const previousStep = () => {
-
+  if (!currPath.value) return
+  
+  if(currPath.value == sharerInfo.title){
+    loadData()
+    return 
+  }
+  const previousPath = path.dirname(currPath.value)
+  openDirectory(previousPath)
 }
 
 const toRootStep = () => {
-
+  loadData()
+  currPath.value = ""
 }
 
 onMounted(() => {
@@ -501,5 +512,11 @@ onMounted(() => {
 
 .setting-button-group {
   margin-left: 40px;
+}
+
+.avatar{
+  position: relative;
+  left: 5px;
+  top: 5px;
 }
 </style>

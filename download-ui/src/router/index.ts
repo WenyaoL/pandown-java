@@ -40,7 +40,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'Link',
         component: () => import('@/views/form/index.vue'),
-        meta: { title: 'From', icon: 'form' }
+        meta: { title: 'shareLink', icon: 'form' }
       }
     ]
   },
@@ -50,7 +50,6 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/baidu/download',
     name: 'Baidu',
-    meta: { title: 'Baidu', icon: 'el-icon-s-help' },
     children: [
       {
         path: 'download',
@@ -60,6 +59,18 @@ export const constantRoutes = [
       }
     ]
   },
+
+  {
+    path: '/github',
+    component: Layout,
+    children: [
+      {
+        path: 'https://github.com/WenyaoL/pandown-java',
+        meta: { title: 'github', icon: 'link' }
+      }
+    ]
+  },
+
   // 404 page must be placed at the end !!!
   { path: '/:catchAll(.*)', redirect: '/404', hidden: true }
 ]
