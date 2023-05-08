@@ -5,6 +5,8 @@ import com.pan.pandown.dao.entity.PandownUser;
 import com.pan.pandown.util.constants.RegisterCode;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.Map;
+
 /**
  * <p>
  *  服务类
@@ -15,7 +17,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
  */
 public interface IPandownUserService extends IService<PandownUser>, UserDetailsService {
 
-    RegisterCode userRegister(String username, String password);
+    RegisterCode userRegister(String username, String password, String email, String captcha);
 
-    String userLogin(String username, String password);
+    String userLogin(String email, String password);
+
+    Map getUserInfo(String token);
+
+    String postCaptcha(String email);
+
+    String postCaptchaByForgetPwd(String email);
+
+    RegisterCode resetPassword(String password, String email, String captcha);
 }

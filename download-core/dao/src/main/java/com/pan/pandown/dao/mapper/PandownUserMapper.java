@@ -3,6 +3,8 @@ package com.pan.pandown.dao.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pan.pandown.dao.entity.PandownUser;
 
+import java.util.Map;
+
 /**
  * <p>
  *  Mapper 接口
@@ -13,5 +15,9 @@ import com.pan.pandown.dao.entity.PandownUser;
  */
 public interface PandownUserMapper extends BaseMapper<PandownUser> {
 
-    public PandownUser selectByUserName(String username);
+    PandownUser selectByUserName(String username);
+
+    PandownUser selectByEmail(String email);
+
+    Map getUserInfoById(Long id);
 }

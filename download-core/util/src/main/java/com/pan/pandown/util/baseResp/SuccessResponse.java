@@ -22,6 +22,12 @@ public class SuccessResponse extends BaseResponse {
         put("data",data);
     }
 
+    public SuccessResponse (String msg, Object data){
+        super();
+        put("msg",msg);
+        put("data",data);
+    }
+
     @Override
     protected void setCode() {
         this.put(KEY_CODE , CODE_SUCCESS );

@@ -3,8 +3,6 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
-import {ElMessage} from 'element-plus'
-import store from '@/store'
 import Layout from '../layout/index.vue'
 
 export const constantRoutes = [
@@ -78,7 +76,7 @@ export const constantRoutes = [
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: constantRoutes
+  routes: constantRoutes as any
 })
 
 
@@ -92,7 +90,7 @@ router.beforeEach(async(to, from, next) => {
   NProgress.start()
 
   // set page title
-  document.title = getPageTitle(to.meta.title)
+  document.title = getPageTitle(to.meta.title as any)
 
   // determine whether the user has logged in
   const hasToken = getToken()

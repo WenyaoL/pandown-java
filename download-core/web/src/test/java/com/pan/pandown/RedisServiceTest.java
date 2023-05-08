@@ -32,7 +32,7 @@ public class RedisServiceTest {
         System.out.println(o);
 
 
-        PandownUser pandownUser = new PandownUser(111L, "asdfasdf", "basdfasdfasdf");
+        PandownUser pandownUser = new PandownUser(111L, "asdfasdf", "basdfasdfasdf","dasfd");
         redisService.set("test:123456",pandownUser);
         Object o1 = redisService.get("test:123456");
         System.out.println(o1);

@@ -125,7 +125,7 @@
 import { ref, reactive, onMounted,computed } from 'vue'
 import { useStore } from 'vuex'
 import { formatSize } from '@/utils'
-import { getShareDir, getSignAndTime, getSvipDlink } from '@/api/download'
+import { getShareDir, getSignAndTime, getSvipDlink } from '@/api/downloadService'
 import { simpleInstance } from '@/api/request'
 import path from 'path-browserify'
 import { InfoFilled } from '@element-plus/icons-vue'

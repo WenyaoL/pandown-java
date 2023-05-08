@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/user'
+import UserService from '@/api/userService'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
@@ -29,14 +29,14 @@ const mutations = {
 
 const actions = {
   // user login
-  login({ commit }: any, userInfo: { username: any; password: any }) {
-    const { username, password } = userInfo
+  login({ commit }: any, userInfo: any) {
+    const { username, password,email } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then((response: { data: any }) => {
+      UserService.login({ email: email.trim(), password: password }).then((response: { data: any }) => {
         const { data } = response
         commit('SET_TOKEN', data.token)
         setToken(data.token)
-        resolve(null)
+        resolve(data.token)
       }).catch((error: any) => {
         console.log(error);
         reject(error)
@@ -45,9 +45,9 @@ const actions = {
   },
 
   // get user info
-  getInfo({ commit, state }:any) {
+  getInfo({ commit, state }: any) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      UserService.getInfo(state.token).then(response => {
         const { data } = response
         if (!data) {
           return reject('Verification failed, please Login again.')
@@ -63,10 +63,9 @@ const actions = {
   },
 
   // user logout
-  logout({ commit, state }:any) {
+  logout({ commit, state }: any) {
     return new Promise((resolve, reject) => {
-      logout().then(() => {
-        console.log("asdfasdf");
+      UserService.logout().then(() => {
         removeToken() // must remove  token  first
         resetRouter()
         commit('RESET_STATE')
@@ -77,8 +76,45 @@ const actions = {
     })
   },
 
+  // user register
+  register({ commit, state }: any,data:any) {
+    return new Promise((resolve, reject) => {
+      UserService.register(data).then(() => {
+        resolve(null)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  // user postCaptcha
+  postCaptcha({ commit }: any, data: {email: string}) {
+    return new Promise((resolve, reject) => {
+      UserService.postCaptcha(data).then(() => {
+        resolve(null)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  // user forgetPwd postCaptcha
+  postCaptchaByForgetPwd({ commit }: any, data: {email: string}) {
+    return new Promise((resolve, reject) => {
+      UserService.postCaptchaByForgetPwd(data).then(() => {
+        resolve(null)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  resetPassword({ commit }: any,data:any){
+    return UserService.resetPassword(data)
+  },
+
   // remove token
-  resetToken({ commit }:any) {
+  resetToken({ commit }: any) {
     return new Promise(resolve => {
       removeToken() // must remove  token  first
       commit('RESET_STATE')

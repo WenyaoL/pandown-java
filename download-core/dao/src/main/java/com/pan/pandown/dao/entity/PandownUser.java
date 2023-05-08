@@ -34,5 +34,16 @@ public class PandownUser implements Serializable {
     @ApiModelProperty(value = "用户密码")
     private String password;
 
+    @ApiModelProperty(value = "用户邮箱")
+    private String email;
 
+    @ApiModelProperty(value = "用户头像")
+    private String avatar;
+
+    public PandownUser(Long id, String username, String password, String email) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+    }
 }

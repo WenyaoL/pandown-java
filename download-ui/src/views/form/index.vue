@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import {getShareDir} from '@/api/download'
+import {getShareDir} from '@/api/downloadService'
 import { mapState } from 'vuex'
 import { mapMutations } from 'vuex'
 

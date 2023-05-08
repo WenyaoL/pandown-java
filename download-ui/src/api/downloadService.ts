@@ -24,3 +24,9 @@ export function getSvipDlink(data:any){
     data
   })
 }
+
+export default {
+  getShareDir,
+  getSignAndTime,
+  getSvipDlink
+}

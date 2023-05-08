@@ -35,6 +35,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //除了/user/login，其他接口都必须认证了才能通过
         http.authorizeRequests()
                 .antMatchers("/user/login").anonymous()
+                .antMatchers("/user/register").anonymous()
+                .antMatchers("/user/postCaptcha").anonymous()
+                .antMatchers("/user/postCaptchaByForgetPwd","/user/resetPassword").anonymous()
                 .anyRequest().authenticated();
 
         //关闭csrf
