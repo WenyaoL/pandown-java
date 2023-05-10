@@ -1,89 +1,111 @@
 <template>
   <div class="link-container">
-    <el-collapse v-model="activeCollapseNames" class="collapse-panel">
-      <el-collapse-item name="Option">
-        <template #title>
-          <span class="collapse-title">操作: </span><el-icon class="header-icon"><info-filled /></el-icon>
-        </template>
-        <div class="button-group">
-          <el-button-group>
-            <el-button size="small" class="button-item" type="primary" @click="previousStep">上一级</el-button>
-            <el-button size="small" class="button-item" type="primary" @click="toRootStep">返回根目录</el-button>
-          </el-button-group>
+    <el-row>
+      <el-col :offset="0" :span="23">
+        <el-collapse v-model="activeCollapseNames" class="collapse-panel">
+          <el-collapse-item name="Option">
+            <template #title>
+              <span class="collapse-title">操作: </span><el-icon class="header-icon"><info-filled /></el-icon>
+            </template>
+            <div class="button-group">
 
-          <el-button-group class="setting-button-group">
-            <el-button size="small" class="button-item" type="primary" @click="downloadSelected">下载所选文件</el-button>
-            <el-button size="small" class="button-item" type="primary"
-              @click="aria2SettingDialogVisible = true">Aria2配置</el-button>
-          </el-button-group>
-        </div>
-      </el-collapse-item>
 
-      <el-collapse-item title="分享描述" name="Describe" :size='"small"'>
-        <template #title>
-          <span class="collapse-title">分享描述: </span><el-icon class="header-icon"><info-filled /></el-icon>
-        </template>
+              <el-button-group class="setting-button-group">
+                <el-button size="small" class="button-item" type="primary" @click="downloadSelected">下载所选文件</el-button>
+                <el-button size="small" class="button-item" type="primary"
+                  @click="aria2SettingDialogVisible = true">Aria2配置</el-button>
+              </el-button-group>
+            </div>
+          </el-collapse-item>
 
-        <el-row>
-          <el-col :span="12"><span class="des-item">分享者: </span>{{ sharerInfo.uname }}<el-avatar :size="18" class="avatar"
-              :src="sharerInfo.avatar" /></el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12"><span class="des-item">分类标题: </span>{{ sharerInfo.title }}</el-col>
-          <el-col :span="6"><span class="des-item">分享时间: </span>{{ sharerInfo.dateStr }}</el-col>
-          <el-col :span="6"><span class="des-item">过期类型: </span>{{ sharerInfo.expiredStr }}</el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12"><span class="des-item">surl: </span>{{ surl }}</el-col>
-          <el-col :span="12"><span class="des-item">提取码: </span>{{ pwd }}</el-col>
-        </el-row>
-      </el-collapse-item>
+          <el-collapse-item title="分享描述" name="Describe" :size='"small"'>
+            <template #title>
+              <span class="collapse-title">分享描述: </span><el-icon class="header-icon"><info-filled /></el-icon>
+            </template>
 
-    </el-collapse>
-    <el-table v-loading="listLoading" :data="list" element-loading-text="Loading" highlight-current-row
-      @selection-change="handleSelectionChange">
-
-      <el-table-column type="expand">
-        <template #default="props">
-          <div class="link-des-container">
             <el-row>
-              <el-col :span="12"><span class="des-item">文件id: </span>{{ props.row.fs_id }}</el-col>
-              <el-col :span="12"><span class="des-item">目录: </span>{{ props.row.isdir }}</el-col>
+              <el-col :span="12"><span class="des-item">分享者: </span>{{ sharerInfo.uname }}<el-avatar :size="18"
+                  class="avatar" :src="sharerInfo.avatar" /></el-col>
             </el-row>
             <el-row>
-              <el-col :span="12"><span class="des-item">md5: </span>{{ props.row.md5 ? props.row.md5 : 'null' }}</el-col>
-              <el-col :span="12"><span class="des-item">seckey: </span>{{ props.row.seckey }}</el-col>
+              <el-col :span="12"><span class="des-item">分类标题: </span>{{ sharerInfo.title }}</el-col>
+              <el-col :span="6"><span class="des-item">分享时间: </span>{{ sharerInfo.dateStr }}</el-col>
+              <el-col :span="6"><span class="des-item">过期类型: </span>{{ sharerInfo.expiredStr }}</el-col>
             </el-row>
             <el-row>
-              <el-col :span="12"><span class="des-item">文件大小: </span>{{ formatSize(props.row.size) }}</el-col>
-              <el-col :span="12"><span class="des-item">文件名: </span>{{ props.row.server_filename }}</el-col>
+              <el-col :span="12"><span class="des-item">surl: </span>{{ surl }}</el-col>
+              <el-col :span="12"><span class="des-item">提取码: </span>{{ pwd }}</el-col>
             </el-row>
-          </div>
-        </template>
-      </el-table-column>
+          </el-collapse-item>
 
-      <el-table-column type="selection" width="55" />
+        </el-collapse>
+      </el-col>
+    </el-row>
 
-      <el-table-column label="Name" width="600">
-        <template #default="scope">
-          <span class="file-svg"><component :is="getFileIcon(scope.row.server_filename, scope.row.isdir)" /></span>
-          <a class="file-name" @click.prevent="handleFileClick(scope.row)">{{ scope.row.server_filename }}</a>
-        </template>
-      </el-table-column>
 
-      <el-table-column label="Size">
-        <template #default="scope">{{ formatSize(scope.row.size) }}</template>
-      </el-table-column>
+    <el-row>
+      <el-col :offset="1" :span="22">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header">
+              <span >分享列表</span>
+              <el-button-group class="share-button-group">
+                <el-button size="small" class="button-item" type="primary" @click="previousStep">上一级</el-button>
+                <el-button size="small" class="button-item" type="primary" @click="toRootStep">返回根目录</el-button>
+              </el-button-group>
+            </div>
+          </template>
 
-      <el-table-column label="操作">
-        <template #default="scope">
-          <el-button v-if="scope.row.isdir" type="primary" link size="small"
-            @click="handleFileClick(scope.row)">打开</el-button>
-          <el-button v-else type="primary" link size="small" @click="handleFileClick(scope.row)">下载</el-button>
-        </template>
-      </el-table-column>
+          <el-table v-loading="listLoading" :data="list" element-loading-text="Loading" highlight-current-row
+            @selection-change="handleSelectionChange">
 
-    </el-table>
+            <el-table-column type="expand">
+              <template #default="props">
+                <div class="link-des-container">
+                  <el-row>
+                    <el-col :span="12"><span class="des-item">文件id: </span>{{ props.row.fs_id }}</el-col>
+                    <el-col :span="12"><span class="des-item">目录: </span>{{ props.row.isdir }}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="12"><span class="des-item">md5: </span>{{ props.row.md5 ? props.row.md5 : 'null'
+                    }}</el-col>
+                    <el-col :span="12"><span class="des-item">seckey: </span>{{ props.row.seckey }}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="12"><span class="des-item">文件大小: </span>{{ formatSize(props.row.size) }}</el-col>
+                    <el-col :span="12"><span class="des-item">文件名: </span>{{ props.row.server_filename }}</el-col>
+                  </el-row>
+                </div>
+              </template>
+            </el-table-column>
+
+            <el-table-column type="selection" width="55" />
+
+            <el-table-column label="Name" width="600">
+              <template #default="scope">
+                <span class="file-svg">
+                  <component :is="getFileIcon(scope.row.server_filename, scope.row.isdir)" />
+                </span>
+                <a class="file-name" @click.prevent="handleFileClick(scope.row)">{{ scope.row.server_filename }}</a>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="Size">
+              <template #default="scope">{{ formatSize(scope.row.size) }}</template>
+            </el-table-column>
+
+            <el-table-column label="操作">
+              <template #default="scope">
+                <el-button v-if="scope.row.isdir" type="primary" link size="small"
+                  @click="handleFileClick(scope.row)">打开</el-button>
+                <el-button v-else type="primary" link size="small" @click="handleFileClick(scope.row)">下载</el-button>
+              </template>
+            </el-table-column>
+
+          </el-table>
+        </el-card>
+      </el-col>
+    </el-row>
 
     <el-dialog v-model="aria2SettingDialogVisible" title="配置 Aria2">
       <el-form :model="aria2Setting" :label-width='"120px"'>
@@ -122,7 +144,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, reactive, onMounted,computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useStore } from 'vuex'
 import { formatSize } from '@/utils'
 import { getShareDir, getSignAndTime, getSvipDlink } from '@/api/downloadService'
@@ -181,8 +203,8 @@ const aria2Setting = reactive({
  * @param fileName 
  * @param isdir 
  */
- const getFileIcon = (fileName: string, isdir: number) => {
-  const svg = getSvgByName(fileName, isdir==1?true:false)
+const getFileIcon = (fileName: string, isdir: number) => {
+  const svg = getSvgByName(fileName, isdir == 1 ? true : false)
   return svg.icon
 }
 
@@ -257,7 +279,7 @@ const loadSharerData = () => {
   const { uname, title, link_ctime, expired_type } = data
 
   //fill sharerInfo
-  sharerInfo.dateStr = new Date(link_ctime*1000).toLocaleDateString()
+  sharerInfo.dateStr = new Date(link_ctime * 1000).toLocaleDateString()
   sharerInfo.expiredStr = expired_type == 0 ? "永久有效" : "非永久有效"
   sharerInfo.uname = uname
   sharerInfo.title = title
@@ -442,10 +464,10 @@ const downloadSelected = () => {
 
 const previousStep = () => {
   if (!currPath.value) return
-  
-  if(currPath.value == sharerInfo.title){
+
+  if (currPath.value == sharerInfo.title) {
     loadData()
-    return 
+    return
   }
   const previousPath = path.dirname(currPath.value)
   openDirectory(previousPath)
@@ -511,10 +533,14 @@ onMounted(() => {
 }
 
 .setting-button-group {
+  margin-left: 5px;
+}
+
+.share-button-group {
   margin-left: 40px;
 }
 
-.avatar{
+.avatar {
   position: relative;
   left: 5px;
   top: 5px;

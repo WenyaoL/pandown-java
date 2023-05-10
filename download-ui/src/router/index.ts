@@ -4,7 +4,7 @@ import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 import Layout from '../layout/index.vue'
-
+import {User} from '@element-plus/icons-vue'
 export const constantRoutes = [
   {
     path: '/login',
@@ -68,6 +68,26 @@ export const constantRoutes = [
       }
     ]
   },
+
+  {
+    path: '/setting',
+    component: Layout,
+    redirect: '/setting/accountSetting',
+    meta: { title: 'example', icon: 'setting' },
+    children: [
+      {
+        path:'accountSetting',
+        component: () => import('@/views/setting/AccountSetting.vue'),
+        meta: { title: 'account', icon: 'user'}
+      },
+      {
+        path:'systemSetting',
+        component: () => import('@/views/setting/SystemSetting.vue'),
+        meta: { title: 'account', icon: 'setting' }
+      },
+    ]
+  },
+
 
   // 404 page must be placed at the end !!!
   { path: '/:catchAll(.*)', redirect: '/404', hidden: true }

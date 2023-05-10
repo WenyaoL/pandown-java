@@ -54,3 +54,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.el-sub-menu__title {
+  padding-right: 2px !important;
+}
+</style>

@@ -1,6 +1,7 @@
 <script>
-import { h } from 'vue'
+import { h} from 'vue'
 import SvgIcon from '@/components/SvgIcon/index.vue'
+import {ElIcon} from 'element-plus'
 export default {
   name: 'MenuItem',
   functional: true,
@@ -12,22 +13,27 @@ export default {
     title: {
       type: String,
       default: ''
+    },
+    isElementIcon: {
+      type: Boolean,
+      default:false
     }
   },
   setup(props) {
     return () => {
-      const { icon, title } = props
+      const { icon, title, isElementIcon} = props
       const vnodes = []
       if (icon) {
-        if (icon.includes('el-icon')) {
-          vnodes.push(h('i', { class: [icon, 'sub-el-icon'] }))
+        if (isElementIcon) {
+          vnodes.push(h(ElIcon,{},()=>h(icon,{})))
         } else {
           vnodes.push(h(SvgIcon, { iconClass: icon }))
         }
+        
       }
 
       if (title) {
-        vnodes.push(h('span',{slot:"title"},title))
+        vnodes.push(h('span',{},title))
       }
       return vnodes
     }
@@ -40,5 +46,9 @@ export default {
   color: currentColor;
   width: 1em;
   height: 1em;
+}
+
+.sub-el-icon .el-icon{
+  margin-right: 6px;
 }
 </style>

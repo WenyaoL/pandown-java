@@ -47,3 +47,16 @@
 .el-range-separator {
   box-sizing: content-box;
 }
+
+.el-menu--collapse .el-sub-menu>.el-sub-menu__title>span {
+  height: 0;
+  width: 0;
+  overflow: hidden;
+  visibility: hidden;
+  display: inline-block;
+}
+
+.el-menu--collapse .el-sub-menu>.el-sub-menu__title>i.el-sub-menu__icon-arrow {
+  display: none;
+}
+

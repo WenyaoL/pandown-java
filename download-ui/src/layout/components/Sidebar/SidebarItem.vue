@@ -1,28 +1,23 @@
 <template>
   <div v-if="!item.hidden">
-    <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild?.children||onlyOneChild?.noShowingChildren)&&!item.alwaysShow">
+    <template
+      v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild?.children || onlyOneChild?.noShowingChildren) && !item.alwaysShow">
       <app-link v-if="onlyOneChild?.meta" :to="resolvePath(onlyOneChild?.path)">
-        <el-menu-item  :index="resolvePath(onlyOneChild?.path)" :class="{'submenu-title-noDropdown':!isNest}">
-          <item :icon="onlyOneChild?.meta.icon||(item.meta&&item.meta.icon)"  />
+        <el-menu-item :index="resolvePath(onlyOneChild?.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
+          <item :icon="onlyOneChild?.meta.icon || (item.meta && item.meta.icon)" />
           <template #title>
             <span>{{ onlyOneChild?.meta.title }}</span>
           </template>
         </el-menu-item>
       </app-link>
     </template>
-    
-    <el-sub-menu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
-      <template slot="title">
-        <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />
+
+    <el-sub-menu v-else ref="subMenu" :index="resolvePath(item.path)">
+      <template #title>
+        <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" :isElementIcon="item.meta.isElementIcon" />
       </template>
-      <sidebar-item
-        v-for="child in item.children"
-        :key="child.path"
-        :is-nest="true"
-        :item="child"
-        :base-path="resolvePath(child.path)"
-        class="nest-menu"
-      />
+      <sidebar-item v-for="child in item.children" :key="child.path" :is-nest="true" :item="child"
+        :base-path="resolvePath(child.path)" class="nest-menu" />
     </el-sub-menu>
   </div>
 </template>
@@ -32,11 +27,12 @@ import path from 'path-browserify'
 import { isExternal } from '@/utils/validate'
 import Item from './Item.vue'
 import AppLink from './Link.vue'
-import {ref,computed,onMounted} from 'vue'
-import {useStore} from 'vuex'
+import {Location} from '@element-plus/icons-vue'
+import { ref, computed, onMounted } from 'vue'
+import { useStore } from 'vuex'
 export default {
   name: 'SidebarItem',
-  components: { Item, AppLink },
+  components: { Item, AppLink,Location },
   props: {
     // route object
     item: {
@@ -52,15 +48,15 @@ export default {
       default: ''
     }
   },
-  setup(props){
+  setup(props) {
     const subMenu = ref()
 
     const store = useStore()
-    const device = computed(()=>store.state.app.device)
+    const device = computed(() => store.state.app.device)
     const onlyOneChild = ref<any>(null)
-    
-    
-    const hasOneShowingChild = (children:any[] = [], parent:any)=>{
+
+
+    const hasOneShowingChild = (children: any[] = [], parent: any) => {
 
       const showingChildren = children.filter(item => {
         if (item.hidden) {
@@ -79,14 +75,14 @@ export default {
 
       // Show parent if there are no child router to display
       if (showingChildren.length === 0) {
-        onlyOneChild.value = { ... parent, path: '', noShowingChildren: true }
+        onlyOneChild.value = { ...parent, path: '', noShowingChildren: true }
         return true
       }
 
       return false
     }
 
-    const resolvePath = (routePath:any)=>{
+    const resolvePath = (routePath: any) => {
       if (isExternal(routePath)) {
         return routePath
       }
@@ -96,11 +92,11 @@ export default {
       return path.resolve(props.basePath, routePath)
     }
 
-    const fixBugIniOS = ()=>{
+    const fixBugIniOS = () => {
       const $subMenu = subMenu.value
       if ($subMenu) {
         const handleMouseleave = $subMenu.handleMouseleave
-        $subMenu.handleMouseleave = (e:any) => {
+        $subMenu.handleMouseleave = (e: any) => {
           if (device.value === 'mobile') {
             return
           }
@@ -109,7 +105,7 @@ export default {
       }
     }
 
-    onMounted(()=>fixBugIniOS())
+    onMounted(() => fixBugIniOS())
 
     return {
       onlyOneChild,
@@ -118,6 +114,6 @@ export default {
       fixBugIniOS,
     }
   },
-  
+
 }
 </script>
