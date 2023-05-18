@@ -22,9 +22,9 @@ public class PandownUserRole implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String userId;
+    private Long userId;
 
-    private String roleId;
+    private Integer roleId;
 
     private LocalDateTime createTime;
 

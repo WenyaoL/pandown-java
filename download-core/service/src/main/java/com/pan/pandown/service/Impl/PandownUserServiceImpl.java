@@ -3,8 +3,10 @@ package com.pan.pandown.service.Impl;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pan.pandown.dao.entity.PandownUser;
+import com.pan.pandown.dao.entity.PandownUserRole;
 import com.pan.pandown.dao.mapper.PandownUserMapper;
 import com.pan.pandown.dao.model.LoginUser;
+import com.pan.pandown.service.IPandownUserRoleService;
 import com.pan.pandown.service.IPandownUserService;
 import com.pan.pandown.service.login.EmailService;
 import com.pan.pandown.service.login.TokenService;
@@ -22,9 +24,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +66,9 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Resource
+    private IPandownUserRoleService pandownUserRoleService;
+
     public List<GrantedAuthority> createAuthorityList(String... authorities) {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>(authorities.length);
         for (String authority : authorities) {
@@ -93,6 +100,7 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
      * @return
      */
     @Override
+    @Transactional
     public RegisterCode userRegister(String username, String password, String email, String captcha) {
         Integer count = query().eq("email", email).count();
         if (count>0){
@@ -105,9 +113,19 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
         if (Objects.isNull(registerCaptcha)) return RegisterCode.FAIL;
         //如果用户名为空
         if (StringUtils.isBlank(username)) username = email;
+        //雪花id
+        long nextId = snowflakeGenerator.nextId();
+
         //验证码相同并保存
         if(registerCaptcha.toString().equals(captcha)
-                && save(new PandownUser(snowflakeGenerator.nextId(),username,bCryptPasswordEncoder.encode(password),email))){
+                && save(new PandownUser(nextId,username,bCryptPasswordEncoder.encode(password),email))){
+            PandownUserRole pandownUserRole = new PandownUserRole();
+            pandownUserRole.setUserId(nextId);
+            pandownUserRole.setRoleId(2);  //普通用户
+            pandownUserRole.setCreator("system");
+            pandownUserRole.setCreateTime(LocalDateTime.now());
+            pandownUserRoleService.save(pandownUserRole);
+
             redisService.hdel("user_register:captcha",email);
             return RegisterCode.SUCCESS;
         }

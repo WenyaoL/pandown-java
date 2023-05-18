@@ -113,7 +113,7 @@ export default defineComponent({
         callback(new Error('请输入密码'))
       } else {
         if (state.registerForm.checkPass !== '') {
-          registerRef.value.validateField('checkPass')
+          registerRef?.value?.validateField('checkPass')
         }
         callback()
       }

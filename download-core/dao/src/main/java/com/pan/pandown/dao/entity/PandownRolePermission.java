@@ -21,9 +21,9 @@ public class PandownRolePermission implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String roleId;
+    private Integer roleId;
 
-    private String permissionId;
+    private Integer permissionId;
 
 
 }
