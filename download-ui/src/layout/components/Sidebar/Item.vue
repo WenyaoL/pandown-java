@@ -1,5 +1,5 @@
 <script>
-import { h} from 'vue'
+import { h,markRaw,shallowRef} from 'vue'
 import SvgIcon from '@/components/SvgIcon/index.vue'
 import {ElIcon} from 'element-plus'
 export default {
@@ -7,7 +7,7 @@ export default {
   functional: true,
   props: {
     icon: {
-      type: String,
+      type: [String,Object],
       default: ''
     },
     title: {
@@ -25,7 +25,7 @@ export default {
       const vnodes = []
       if (icon) {
         if (isElementIcon) {
-          vnodes.push(h(ElIcon,{},()=>h(icon,{})))
+          vnodes.push(h(ElIcon,()=>h(icon)))
         } else {
           vnodes.push(h(SvgIcon, { iconClass: icon }))
         }

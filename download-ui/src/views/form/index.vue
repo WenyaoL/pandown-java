@@ -11,6 +11,9 @@
         <el-form-item label="分享链接">
           <el-input v-model="form.link" placeholder="请输入分享链接(可携带提取码)"/>
         </el-form-item>
+        <el-form-item label="提取码">
+          <el-input v-model="form.pwd" placeholder="提取码"/>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSubmit">提取</el-button>
         </el-form-item>
@@ -35,6 +38,7 @@
 import { getShareDir } from '@/api/downloadService'
 import { mapState } from 'vuex'
 import { mapMutations } from 'vuex'
+import {ElMessage} from 'element-plus'
 
 export default {
   data() {
@@ -45,7 +49,8 @@ export default {
         pwd: ''
       },
       form: {
-        link: ''
+        link: '',
+        pwd:''
       }
     }
   },
@@ -74,28 +79,25 @@ export default {
       if (linkResult) {
         const link = linkResult[0]
         this.parseResult.link = link
-      } else {
-        this.parseResult.link = ''
+        this.form.link = link
       }
 
       if (surlResult) {
         const surl = surlResult[0]
         this.parseResult.surl = surl
-      } else {
-        this.parseResult.surl = ''
       }
 
       if (pwdResult) {
         const pwd = pwdResult[0]
         this.parseResult.pwd = pwd
-      } else {
-        this.parseResult.pwd = ''
+        this.form.pwd = pwd
       }
+
     },
     onSubmit() {
       const shareLink = this.form.link
       if (!shareLink) {
-        console.error('分享链接不能为空')
+        ElMessage.error('分享链接不能为空')
         return
       }
       const { link, surl, pwd } = this.parseResult

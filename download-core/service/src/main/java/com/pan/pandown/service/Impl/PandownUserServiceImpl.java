@@ -1,7 +1,6 @@
 package com.pan.pandown.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.extension.conditions.update.UpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pan.pandown.dao.entity.PandownUser;
 import com.pan.pandown.dao.mapper.PandownUserMapper;
@@ -9,6 +8,7 @@ import com.pan.pandown.dao.model.LoginUser;
 import com.pan.pandown.service.IPandownUserService;
 import com.pan.pandown.service.login.EmailService;
 import com.pan.pandown.service.login.TokenService;
+import com.pan.pandown.util.DTO.SpringGrantedAuthority;
 import com.pan.pandown.util.constants.RegisterCode;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
 import com.pan.pandown.util.redis.RedisService;
@@ -18,7 +18,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,6 +44,9 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
     @Autowired
     private RedisService redisService;
 
+    @Resource
+    private PandownUserMapper pandownUserMapper;
+
     @Autowired
     private SnowflakeGenerator snowflakeGenerator;
 
@@ -59,14 +62,25 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    public List<GrantedAuthority> createAuthorityList(String... authorities) {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>(authorities.length);
+        for (String authority : authorities) {
+            grantedAuthorities.add(new SpringGrantedAuthority(authority));
+        }
+        return grantedAuthorities;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         PandownUser pandownUser = query().eq("email",email).one();
         if (Objects.isNull(pandownUser)){
             throw new UsernameNotFoundException("未知用户");
         }else {
-            List<GrantedAuthority> userAuthorityList = AuthorityUtils.createAuthorityList("USER");
-            return new LoginUser(pandownUser);
+            List<String> permissions = pandownUserMapper.getPermissionsByUserId(pandownUser.getId());
+            String[] permissionsArr = permissions.toArray(new String[permissions.size()]);
+            List<GrantedAuthority> authorityList = this.createAuthorityList(permissionsArr);
+
+            return new LoginUser(pandownUser,authorityList);
         }
     }
 
@@ -111,6 +125,12 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
         LoginUser principal = (LoginUser) authenticate.getPrincipal();
         String token = tokenService.createToken(principal);
         return token;
+    }
+
+    @Override
+    public boolean userLogout(String token) {
+        boolean b = tokenService.expireToken(token);
+        return b;
     }
 
     @Override

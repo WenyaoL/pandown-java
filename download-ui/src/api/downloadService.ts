@@ -2,7 +2,7 @@ import request from './request'
 
 export function getShareDir(data:any){
   return request({
-    url: '/api/list_dir',
+    url: 'api/download/list_dir',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export function getShareDir(data:any){
 
 export function getSignAndTime(data:any){
   return request({
-    url:'api/getSignAndTime',
+    url:'api/download/getSignAndTime',
     method: 'post',
     data
   })
@@ -19,7 +19,15 @@ export function getSignAndTime(data:any){
 
 export function getSvipDlink(data:any){
   return request({
-    url:'api/getSvipDlink',
+    url:'api/download/getSvipDlink',
+    method: 'post',
+    data
+  })
+}
+
+export function getAllSvipDlink(data:any){
+  return request({
+    url:'api/download/getAllSvipDlink',
     method: 'post',
     data
   })

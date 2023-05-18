@@ -4,7 +4,10 @@ import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 import Layout from '../layout/index.vue'
-import {User} from '@element-plus/icons-vue'
+import store from '@/store'
+import {Plus} from '@element-plus/icons-vue'
+import {markRaw} from 'vue'
+
 export const constantRoutes = [
   {
     path: '/login',
@@ -26,7 +29,7 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index.vue'),
-      meta: { title: 'Dashboard', icon: 'dashboard' }
+      meta: { title: '声明', icon: 'dashboard' }
     }]
   },
 
@@ -38,7 +41,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'Link',
         component: () => import('@/views/form/index.vue'),
-        meta: { title: 'shareLink', icon: 'form' }
+        meta: { title: '链接解析', icon: 'form' }
       }
     ]
   },
@@ -53,11 +56,43 @@ export const constantRoutes = [
         path: 'download',
         name: 'BaiduDownload',
         component: () => import('@/views/download/index.vue'),
-        meta: { title: 'download', icon: 'tree' }
+        meta: { title: '下载列表', icon: 'tree' }
       }
     ]
   },
 
+  
+]
+
+
+
+
+// asyncRoutes(for permiss)
+export const asyncRoutes = [
+  {
+    path: '/setting',
+    component: Layout,
+    redirect: '/setting/accountSetting',
+    meta: { title: '设置', icon: 'setting',roles: ['admin'] },
+    children: [
+      {
+        path:'accountSetting',
+        component: () => import('@/views/setting/AccountDetailPage.vue'),
+        meta: { title: '账号详情', icon: 'user',roles: ['admin']}
+      },
+      {
+        path:'svipAccountManage',
+        component: () => import('@/views/setting/SvipAccountManagePage.vue'),
+        meta: { title: 'SVip管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
+      },
+      {
+        path:'commonAccountManage',
+        component: () => import('@/views/setting/CommonAccountManagePage.vue'),
+        meta: { title: '普通账号管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
+      },
+    ]
+  },
+  //CommonAccountManagePage
   {
     path: '/github',
     component: Layout,
@@ -69,29 +104,10 @@ export const constantRoutes = [
     ]
   },
 
-  {
-    path: '/setting',
-    component: Layout,
-    redirect: '/setting/accountSetting',
-    meta: { title: 'example', icon: 'setting' },
-    children: [
-      {
-        path:'accountSetting',
-        component: () => import('@/views/setting/AccountSetting.vue'),
-        meta: { title: 'account', icon: 'user'}
-      },
-      {
-        path:'systemSetting',
-        component: () => import('@/views/setting/SystemSetting.vue'),
-        meta: { title: 'account', icon: 'setting' }
-      },
-    ]
-  },
-
-
   // 404 page must be placed at the end !!!
-  { path: '/:catchAll(.*)', redirect: '/404', hidden: true }
+  { path: '/:catchAll(.*)', redirect: '/404', hidden: true },
 ]
+
 ///:catchAll(.*)
 
 const router = createRouter({
@@ -121,7 +137,34 @@ router.beforeEach(async(to, from, next) => {
       next({ path: '/' })
       NProgress.done()
     } else {
-      next()
+      const hasRoles = store.getters.roles && store.getters.roles.length > 0
+      if (hasRoles) {
+        next()
+      }else{
+        try {
+          // get user info
+          // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
+          const { role_name } = await store.dispatch('user/getInfo')
+                    
+          // generate accessible routes map based on roles
+          const accessRoutes = await store.dispatch('permission/generateRoutes', [role_name]) as []
+     
+          // dynamically add accessible routes
+          accessRoutes.forEach(accessRoute=>{
+            router.addRoute(accessRoute)
+          })
+          
+          // hack method to ensure that addRoutes is complete
+          // set the replace: true, so the navigation will not leave a history record
+          next({ ...to, replace: true })
+          return to.fullPath
+        } catch (error) {
+          // remove token and go to login page to re-login
+          await store.dispatch('user/resetToken')
+          next(`/login?redirect=${to.path}`)
+          NProgress.done()
+        }
+      }
       NProgress.done()
     }
   } else {
@@ -143,10 +186,12 @@ router.afterEach(() => {
 })
 
 
-
 export function resetRouter() {
   // @ts-ignore
-  const newRouter = createRouter()
+  const newRouter = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: constantRoutes as any
+  })
   // @ts-ignore
   router.matcher = newRouter.matcher // reset router
 }

@@ -101,4 +101,18 @@ public class TokenService {
         return loginUser;
     }
 
+    /**
+     * 使一个token失效
+     * @return
+     */
+    public boolean expireToken(String token){
+        Map<String, Claim> claimMap = jwtService.parseToken(token);
+        String s = claimMap.get(LOGIN_USER_KEY).asString();
+        boolean b = redisService.hasKey(LOGIN_TOKEN_KEY + s);
+        if (!b) return b;
+
+        redisService.del(LOGIN_TOKEN_KEY + s);
+        return true;
+    }
+
 }

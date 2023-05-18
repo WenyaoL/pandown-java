@@ -1,4 +1,4 @@
-package com.pan.pandown.util.DTO;
+package com.pan.pandown.util.DTO.PandownUserApi;
 
 import lombok.Data;
 

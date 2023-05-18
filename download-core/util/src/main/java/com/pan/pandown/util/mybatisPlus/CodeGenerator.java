@@ -38,7 +38,7 @@ public class CodeGenerator {
 
 
     //表名映射(','号分割符)
-    private static String INCLUDE_TABLES = "pandown_user";
+    private static String INCLUDE_TABLES = "dbtable_common_account";
 
     //包名配置
     private static String CONTROLLER = "web.controller";
@@ -51,7 +51,7 @@ public class CodeGenerator {
     //private static String ModuleName = "";
 
     //公共全局
-    private static String AUTHOR = "wenyao";
+    private static String AUTHOR = "yalier";
 
 
     //数据源配置

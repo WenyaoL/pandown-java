@@ -17,15 +17,58 @@ import java.util.Map;
  */
 public interface IPandownUserService extends IService<PandownUser>, UserDetailsService {
 
+    /**
+     * 用户注册
+     * @param username
+     * @param password
+     * @param email
+     * @param captcha
+     * @return
+     */
     RegisterCode userRegister(String username, String password, String email, String captcha);
 
+    /**
+     * 用户登录
+     * @param email
+     * @param password
+     * @return
+     */
     String userLogin(String email, String password);
 
+    /**
+     * 用户登出
+     * @param token
+     * @return
+     */
+    boolean userLogout(String token);
+
+    /**
+     * 获取用户信息
+     * @param token
+     * @return
+     */
     Map getUserInfo(String token);
 
+    /**
+     * 发送邮箱验证码
+     * @param email
+     * @return
+     */
     String postCaptcha(String email);
 
+    /**
+     * 发送邮箱验证码(忘记密码接口)
+     * @param email
+     * @return
+     */
     String postCaptchaByForgetPwd(String email);
 
+    /**
+     * 重置密码
+     * @param password
+     * @param email
+     * @param captcha
+     * @return
+     */
     RegisterCode resetPassword(String password, String email, String captcha);
 }

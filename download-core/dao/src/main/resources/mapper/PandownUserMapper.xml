@@ -25,7 +25,18 @@
     </select>
 
     <select id="getUserInfoById" resultType="java.util.Map">
-        SELECT username, email FROM pandown_user WHERE id=#{id}
+        SELECT u.id,u.username,u.email,u.avatar,r.role_name FROM `pandown_user`AS u
+        INNER JOIN `pandown_user_role` AS ur ON u.id = ur.user_id
+        INNER JOIN `pandown_role` AS r ON ur.role_id = r.id
+        WHERE u.id = #{id};
+    </select>
+
+    <select id="getPermissionsByUserId" resultType="java.lang.String">
+        SELECT code FROM pandown_permission WHERE id IN (
+            SELECT permission_id FROM pandown_role_permission WHERE role_id = (
+                SELECT role_id FROM  pandown_user_role WHERE user_id = #{id}
+            )
+        )
     </select>
 
 </mapper>

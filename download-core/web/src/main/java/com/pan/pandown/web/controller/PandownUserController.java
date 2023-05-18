@@ -2,8 +2,8 @@ package com.pan.pandown.web.controller;
 
 
 import com.pan.pandown.service.IPandownUserService;
-import com.pan.pandown.util.DTO.UserLoginDTO;
-import com.pan.pandown.util.DTO.UserRegisterDTO;
+import com.pan.pandown.util.DTO.PandownUserApi.UserLoginDTO;
+import com.pan.pandown.util.DTO.PandownUserApi.UserRegisterDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
@@ -57,11 +57,23 @@ public class PandownUserController {
         }});
     }
 
+    @PostMapping("/logout")
+    @ApiOperation(value = "用户登出接口",notes = "用户登出登录",httpMethod = "POST")
+    public BaseResponse userLogout(@RequestBody Map<String,String> map){
+        if(map.get("token") == null) return new FailResponse("token不存在");
+        boolean b = pandownUserService.userLogout(map.get("token"));
+        if (!b) return new FailResponse("登出失败");
+
+        return new SuccessResponse();
+    }
+
+
     @PostMapping("/info")
     @ApiOperation(value = "用户信息接口",notes = "获取用户信息",httpMethod = "POST")
     public BaseResponse userInfo(@RequestBody Map<String,String> map){
         if(map.get("token") == null) return new FailResponse("token不存在");
         Map userInfo = pandownUserService.getUserInfo(map.get("token"));
+        System.out.println(userInfo);
         return new SuccessResponse(userInfo);
     }
 

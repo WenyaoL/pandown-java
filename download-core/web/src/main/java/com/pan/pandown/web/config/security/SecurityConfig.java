@@ -1,6 +1,8 @@
 package com.pan.pandown.web.config.security;
 
 
+import com.pan.pandown.dao.entity.PandownPermission;
+import com.pan.pandown.service.IPandownPermissionService;
 import com.pan.pandown.web.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.List;
 
 
 /**
@@ -23,6 +27,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private IPandownPermissionService pandownPermissionService;
+
     //授权
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -32,13 +39,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 
-        //除了/user/login，其他接口都必须认证了才能通过
+        //以下接口不需要认证
         http.authorizeRequests()
-                .antMatchers("/user/login").anonymous()
-                .antMatchers("/user/register").anonymous()
-                .antMatchers("/user/postCaptcha").anonymous()
-                .antMatchers("/user/postCaptchaByForgetPwd","/user/resetPassword").anonymous()
-                .anyRequest().authenticated();
+                .antMatchers("/user/login","/user/register","/user/postCaptcha","/user/postCaptchaByForgetPwd","/user/resetPassword").anonymous();
+
+        //配置访问权限控制
+        List<PandownPermission> list = pandownPermissionService.list();
+        for (int i = 0; i < list.size(); i++) {
+            PandownPermission pandownPermission = list.get(i);
+            String code = pandownPermission.getCode();
+            String url = pandownPermission.getUrl();
+            http.authorizeRequests().antMatchers(url).hasAnyAuthority(code);
+
+        }
+
+        //其他所有接口都需要认证
+        http.authorizeRequests().anyRequest().authenticated();
 
         //关闭csrf
         http.csrf().disable();

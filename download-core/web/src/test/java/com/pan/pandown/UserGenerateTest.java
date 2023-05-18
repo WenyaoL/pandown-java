@@ -30,8 +30,8 @@ public class UserGenerateTest {
         dbtableSvip.setSvipBduss("BDUSS=UzdU1nUG1qYWJPTEVQfmRocmpXVnZxYn5Ea2ZDZVlTLWx-VjBNZnMwNFhtdE5pRVFBQUFBJCQAAAAAAAAAAAEAAADa8x10TW92ZUFib3kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABcNrGIXDaxiQ3;");
         dbtableSvip.setSvipStoken("?");
         dbtableSvip.setState(1);
-        dbtableSvip.setIsUsing(LocalDateTime.now());
-        dbtableSvip.setAddTime(LocalDateTime.now());
+        dbtableSvip.setCreateTime(LocalDateTime.now());
+        dbtableSvip.setUpdateTime(LocalDateTime.now());
         dbtableSvipService.save(dbtableSvip);
     }
 }

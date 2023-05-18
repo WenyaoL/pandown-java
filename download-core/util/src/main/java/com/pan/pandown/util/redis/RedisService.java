@@ -511,7 +511,7 @@ public final class RedisService {
      * @param value 值
      * @return
      */
-    public boolean lSet(String key, List<Object> value) {
+    public boolean lSet(String key, List value) {
         try {
             redisTemplate.opsForList().rightPushAll(key, value);
             return true;
@@ -531,7 +531,7 @@ public final class RedisService {
      * @param time  时间(秒)
      * @return
      */
-    public boolean lSet(String key, List<Object> value, long time) {
+    public boolean lSet(String key, List value, long time) {
         try {
             redisTemplate.opsForList().rightPushAll(key, value);
             if (time > 0)

@@ -8,14 +8,19 @@
         <result column="name" property="name" />
         <result column="svip_bduss" property="svipBduss" />
         <result column="svip_stoken" property="svipStoken" />
-        <result column="add_time" property="addTime" />
         <result column="state" property="state" />
-        <result column="is_using" property="isUsing" />
+        <result column="vip_type" property="vipType" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, name, svip_bduss, svip_stoken, add_time, state, is_using
+        id, name, svip_bduss, svip_stoken, create_time, state, is_using
     </sql>
+
+    <select id="getSvipDetail" resultMap="BaseResultMap">
+        SELECT id,name,svip_bduss,svip_stoken,vip_type,create_time,state FROM dbtable_svip
+    </select>
 
 </mapper>

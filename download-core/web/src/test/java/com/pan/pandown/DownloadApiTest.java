@@ -3,8 +3,8 @@ package com.pan.pandown;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pan.pandown.api.RequestService;
 import com.pan.pandown.service.download.DownloadService;
-import com.pan.pandown.util.DTO.downloadApi.DownloadApiDTO;
 import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
+import com.pan.pandown.util.DTO.downloadApi.SignAndTimeDTO;
 import com.pan.pandown.web.PandownApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class DownloadApiTest {
         System.out.println(responseEntity.getHeaders().get("Set-Cookie").get(1));*/
 
 
-        Map signAndTime = downloadService.getSignAndTime(surl);
+        SignAndTimeDTO signAndTime = downloadService.getSignAndTime(surl);
         System.out.println(signAndTime);
     }
 
@@ -58,13 +58,13 @@ public class DownloadApiTest {
         String surl = "1xlNlsoQwb--rJdefwslqrQ";
         String pwd = "9r7c";
 
-        Map signAndTime = downloadService.getSignAndTime(surl);
+        SignAndTimeDTO signAndTime = downloadService.getSignAndTime(surl);
         System.out.println(signAndTime);
-        Object timestamp = signAndTime.get("timestamp");
-        Object sign = signAndTime.get("sign");
+        Object timestamp = signAndTime.getTimestamp();
+        Object sign = signAndTime.getSign();
 
         GetDlinkDTO downloadApiDTO = new GetDlinkDTO();
-        downloadApiDTO.setFsIdList(new ArrayList(){{add("292608207123055");}});
+        downloadApiDTO.setFsIdList(new ArrayList(){{add("292608207123055");add("979913794958665");}});
 
         downloadApiDTO.setShareid("59930918115");
         downloadApiDTO.setUk("1127198855");
@@ -78,5 +78,15 @@ public class DownloadApiTest {
         Object dlink1 = downloadService.getSvipDlink(dlink);
         // Object dlink1 = downloadService.getSvipDlink(o.get("dlink").toString());
         System.out.println(dlink1);
+    }
+
+    @Test
+    public void testListDir(){
+        String surl = "1xlNlsoQwb--rJdefwslqrQ";
+        String pwd = "9r7c";
+        String dir = "/游戏/Call.of.Duty.Modern.Warfare.2.Remastered";
+
+        Map map = downloadService.listDir(surl, pwd, dir, 1);
+        System.out.println(map);
     }
 }

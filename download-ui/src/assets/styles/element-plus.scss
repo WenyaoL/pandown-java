@@ -60,3 +60,6 @@
   display: none;
 }
 
+.el-menu--vertical:not(.el-menu--collapse):not(.el-menu--popup-container) .el-sub-menu__title {
+  min-width: 210px;
+}

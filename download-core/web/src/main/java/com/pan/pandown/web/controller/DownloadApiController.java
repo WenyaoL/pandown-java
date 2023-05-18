@@ -2,9 +2,7 @@ package com.pan.pandown.web.controller;
 
 
 import com.pan.pandown.service.download.DownloadService;
-import com.pan.pandown.util.DTO.downloadApi.DownloadApiDTO;
-import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
-import com.pan.pandown.util.DTO.downloadApi.ListFileDTO;
+import com.pan.pandown.util.DTO.downloadApi.*;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
@@ -26,7 +24,7 @@ import java.util.*;
  * @since 2023/4/28
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/download")
 public class DownloadApiController {
 
     @Autowired
@@ -55,9 +53,9 @@ public class DownloadApiController {
     @PostMapping("/getSignAndTime")
     @ApiOperation(value = "时间搓和签名请求接口", notes = "获取sign和Time", httpMethod = "POST")
     public BaseResponse getSignAndTime(@RequestBody @Valid ListFileDTO listFileDTO) {
-        Map map = downloadService.getSignAndTime(listFileDTO.getSurl());
-        if (Objects.isNull(map)) return new FailResponse("获取失败");
-        return new SuccessResponse(map);
+        SignAndTimeDTO signAndTime = downloadService.getSignAndTime(listFileDTO.getSurl());
+        if (Objects.isNull(signAndTime)) return new FailResponse("获取失败");
+        return new SuccessResponse(signAndTime);
     }
 
     @PostMapping("/getDlink")
@@ -71,7 +69,7 @@ public class DownloadApiController {
             @ApiImplicitParam(name = "seckey",value = "seckey",dataType = "String"),
     })
     public BaseResponse getDlink(@RequestBody @Valid GetDlinkDTO getDlinkDTO) {
-        List list = (List) downloadService.getDlink(getDlinkDTO);
+        List list = downloadService.getDlink(getDlinkDTO);
         if (Objects.isNull(list)) return new FailResponse("获取失败");
         return new SuccessResponse(new HashMap<String,Object>(){{put("list",list);}});
     }
@@ -84,12 +82,21 @@ public class DownloadApiController {
     public BaseResponse getSvipdLink(@RequestBody @Valid GetDlinkDTO getDlinkDTO) {
         List dlinkList = getDlinkDTO.getDlinkList();
         if(Objects.isNull(dlinkList)){
-            ArrayList dlinks = (ArrayList) downloadService.getDlink(getDlinkDTO);
+            List<ShareFileDTO> dlinks = downloadService.getDlink(getDlinkDTO);
             Object svipDlink = downloadService.getSvipDlink(dlinks);
             return new SuccessResponse(svipDlink);
         }
-
         return new SuccessResponse(downloadService.getSvipDlink(dlinkList));
+    }
+
+    @PostMapping("/getAllSvipDlink")
+    @ApiOperation(value = "直链请求接口", notes = "获取直链", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "dlinkList",value = "dlinkList",dataType = "List")
+    })
+    public BaseResponse getAllSvipdLink(@RequestBody ListAllSvipDlinkDTO listAllSvipDlinkDTO) {
+        Object allSvipdLink = downloadService.getAllSvipdLink(listAllSvipDlinkDTO);
+        return new SuccessResponse(allSvipdLink);
     }
 
 }

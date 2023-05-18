@@ -5,14 +5,12 @@
         <el-collapse v-model="activeCollapseNames" class="collapse-panel">
           <el-collapse-item name="Option">
             <template #title>
-              <span class="collapse-title">操作: </span><el-icon class="header-icon"><info-filled /></el-icon>
+              <span class="collapse-title">配置: </span><el-icon class="header-icon"><info-filled /></el-icon>
             </template>
             <div class="button-group">
 
-
               <el-button-group class="setting-button-group">
-                <el-button size="small" class="button-item" type="primary" @click="downloadSelected">下载所选文件</el-button>
-                <el-button size="small" class="button-item" type="primary"
+                <el-button class="button-item" type="primary"
                   @click="aria2SettingDialogVisible = true">Aria2配置</el-button>
               </el-button-group>
             </div>
@@ -48,10 +46,14 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
-              <span >分享列表</span>
+              <span>分享列表</span>
               <el-button-group class="share-button-group">
                 <el-button size="small" class="button-item" type="primary" @click="previousStep">上一级</el-button>
                 <el-button size="small" class="button-item" type="primary" @click="toRootStep">返回根目录</el-button>
+                
+              </el-button-group>
+              <el-button-group class="share-button-group">
+                <el-button size="small" class="button-item" type="primary" @click="downloadSelected">下载所选文件</el-button>
               </el-button-group>
             </div>
           </template>
@@ -129,16 +131,32 @@
     <el-dialog v-model="downloadDialogVisible" title="下载当前文件">
 
       <p>下载提示:将提供Aria2下载,IDM下载,浏览器下载。(通过复制链接去下载，需修改浏览器 User Agent为LogStatistic 后下载。)</p>
-      <el-button type="primary" link size="small" @click="copyLink(currDownloadList[0].svipdlink)">复制链接</el-button>
+      <el-button type="primary" link size="small" @click="copyLink(currDownloadList[0].svipDlink)">复制链接</el-button>
       <el-divider />
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="downloadFileByIDM()">IDM下载</el-button>
           <el-button type="primary" @click="downloadFileByAria2()">Aria2下载</el-button>
         </span>
       </template>
     </el-dialog>
 
+    <el-dialog v-model="downloadAllFileDialogVisible" title="批量下载任务">
+      <el-table :data="currDownloadList" v-loading="downloadListLoading" max-height="315">
+        <el-table-column property="server_filename" label="文件名" width="150" />
+        <el-table-column property="size" label="size" width="200" />
+        <el-table-column label="操作">
+          <template #default="scope">
+            <el-button type="primary" link size="small" @click="copyLink(scope.row.svipDlink)">复制</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="downloadFileByAria2()">发送到Aria2</el-button>
+        </span>
+      </template>
+    </el-dialog>
 
   </div>
 </template>
@@ -147,7 +165,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useStore } from 'vuex'
 import { formatSize } from '@/utils'
-import { getShareDir, getSignAndTime, getSvipDlink } from '@/api/downloadService'
+import { getShareDir, getSignAndTime, getSvipDlink, getAllSvipDlink } from '@/api/downloadService'
 import { simpleInstance } from '@/api/request'
 import path from 'path-browserify'
 import { InfoFilled } from '@element-plus/icons-vue'
@@ -163,7 +181,8 @@ interface ShareFile {
   uk: string,
   shareid: number,
   seckey: any,
-  svipdlink?: any,
+  dlink?: any,
+  svipDlink?: any,
 }
 
 const props = defineProps<{}>()
@@ -171,12 +190,18 @@ const props = defineProps<{}>()
 const store = useStore()
 const surl = ref(store.state.surl)
 const pwd = ref(store.state.pwd)
+
+let shareLinkDetail = {
+  uk: '',
+  shareid: '',
+  seckey: ''
+}
+
 const currPath = ref('') //当前路径
 const listLoading = ref(false) //列表加载状态
 const list = ref<ShareFile[]>([]) //当前数据列表
 const selectedList = ref<ShareFile[]>([]) //当前选中数据
-const currDownloadList = ref<ShareFile[]>([]) //当前要下载的文件
-
+const currDownloadList = ref<any[]>([]) //当前要下载的文件
 const activeCollapseNames = ref<String[]>([])  //打开的折叠板
 
 
@@ -190,6 +215,9 @@ const sharerInfo = reactive({
 
 const aria2SettingDialogVisible = ref(false)
 const downloadDialogVisible = ref(false)
+const downloadAllFileDialogVisible = ref(false)
+
+const downloadListLoading = ref(false)
 
 const aria2Setting = reactive({
   aria2RpcUrl: localStorage.getItem('aria2RpcUrl') || 'http://localhost:6800/jsonrpc',
@@ -236,7 +264,7 @@ const parseData = (result?: any) => {
     return
   }
   const { uk, shareid, seckey } = result
-
+  shareLinkDetail = { uk, shareid, seckey }
   const resultList = result.list as any[]
   if (!resultList) {
     return
@@ -340,7 +368,7 @@ const downloadFile = async (row: ShareFile) => {
   const svipDlinkList = await fetchSvipDlink(form)
   if (!svipDlinkList || svipDlinkList.length == 0) return
 
-  row.svipdlink = svipDlinkList[0]
+  row.svipDlink = svipDlinkList[0]
   currDownloadList.value = [row]
   downloadDialogVisible.value = true
   return
@@ -419,7 +447,7 @@ const IDMDownload = (downloadUrl: string, path: string, server_filename: string)
 
 const downloadFileByAria2 = () => {
   currDownloadList.value.forEach(row => {
-    aria2Download(row.svipdlink, row.path, row.server_filename)
+    aria2Download(row.svipDlink, row.path, row.server_filename)
   })
 
 }
@@ -429,7 +457,7 @@ const downloadFileByIDM = () => {
 
 const downloadFileByCommon = () => {
   currDownloadList.value.forEach(row => {
-    commonDownload(row.svipdlink, row.path, row.server_filename)
+    commonDownload(row.svipDlink, row.path, row.server_filename)
   })
 }
 /**
@@ -442,6 +470,7 @@ const handleFileClick = (row: ShareFile) => {
   }
 
   if (row.isdir == 1) { // 是目录
+
     openDirectory(row.path)
   } else { // 单文件，请求svipdlink
     downloadFile(row)
@@ -458,7 +487,25 @@ const handleSelectionChange = (val: ShareFile[]) => {
 
 const downloadSelected = () => {
   // 获取选中行的数据并进行相应处理
+  downloadAllFileDialogVisible.value = true
+  downloadListLoading.value = true
+  getAllSvipDlink({
+    surl: surl.value,
+    pwd: pwd.value,
+    uk: shareLinkDetail.uk,
+    shareid: shareLinkDetail.shareid,
+    seckey: shareLinkDetail.seckey,
+    shareFileList: selectedList.value
+  }).then(res => {
+    console.log(res);
+    const list = res.data as any[]
+    list.forEach(row => {
+      row.size = formatSize(row.size)
+    })
+    currDownloadList.value = res.data
 
+    downloadListLoading.value = false
+  })
 }
 
 
