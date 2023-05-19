@@ -10,6 +10,7 @@ import com.pan.pandown.service.IDbtableSvipService;
 import com.pan.pandown.util.DTO.downloadApi.*;
 import com.pan.pandown.util.redis.RedisService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -108,10 +109,31 @@ public class DownloadService {
      * @return
      */
     public Map listDir(String surl,String pwd,String dir,Integer page){
-        String cookieStr = dbtableCommonAccountService.getNextCommonAccountCookie();
+
+        DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
+        String cookieStr = account.getCookie();
         Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
 
         ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, dir, page,cookieMap.get("BDUSS"));
+
+        //请求失败(请求失败)
+        if (!requestService.isSuccessResponse(responseEntity)){
+            //冻结
+            dbtableCommonAccountService.freezeCommonAccount(account.getId());
+            //再次获取
+            account = dbtableCommonAccountService.getNextCommonAccount();
+            cookieStr = account.getCookie();
+            cookieMap = requestService.strToCookieMap(cookieStr);
+            responseEntity = requestService.requestFileList(surl, pwd, dir, page,cookieMap.get("BDUSS"));
+
+            //还是失败(使用静态cookie)
+            if(!requestService.isSuccessResponse(responseEntity)) responseEntity = requestService.requestFileList(surl, pwd, dir, page);
+
+            //返回
+            return (Map) responseEntity.getBody().getOrDefault("data",null);
+        }
+
+
         return (Map) responseEntity.getBody().getOrDefault("data",null);
     }
 
@@ -119,37 +141,37 @@ public class DownloadService {
 
 
     public SignAndTimeDTO getSignAndTime(String surl){
-        String cookieStr = dbtableCommonAccountService.getNextCommonAccountCookie();
+        DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
+        String cookieStr = account.getCookie();
         Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
+
         ResponseEntity<Map> responseEntity = requestService.requestSignAndTime(surl,cookieMap.get("BAIDUID"));
 
-        String errno = responseEntity.getBody().get("errno").toString();
         //mapper 转换
         ObjectMapper objectMapper = new ObjectMapper();
 
-        if (errno.equals("0")){
+        if (!requestService.isSuccessResponse(responseEntity)){
+            //冻结
+            dbtableCommonAccountService.freezeCommonAccount(account.getId());
+
+            //再次获取
+            account = dbtableCommonAccountService.getNextCommonAccount();
+            cookieStr = account.getCookie();
+            cookieMap = requestService.strToCookieMap(cookieStr);
+            responseEntity = requestService.requestSignAndTime(surl,cookieMap.get("BAIDUID"));
+
+            //还是失败,使用静态cookie重新请求一次
+            if (!requestService.isSuccessResponse(responseEntity)) responseEntity = requestService.requestSignAndTime(surl);
+
             Object data = responseEntity.getBody().get("data");
             SignAndTimeDTO signAndTimeDTO = objectMapper.convertValue(data, SignAndTimeDTO.class);
             return signAndTimeDTO;
-        }else{
-            //请求失败，更新cookie重新请求一次
-            /*List<String> cookies = responseEntity.getHeaders().get("Set-Cookie");
-            cookies.forEach(cookie->{
-                String baiduId = cookie.startsWith("BAIDUID=") ? cookie.split(";")[0].substring(8):"";
-                requestService.addCookie("BAIDUID",baiduId);
-            });*/
-            //使用静态cookie重新请求一次
-            responseEntity = requestService.requestSignAndTime(surl);
-            errno = responseEntity.getBody().get("errno").toString();
-            if(errno.equals("0")){
-                Object data = responseEntity.getBody().get("data");
-                SignAndTimeDTO signAndTimeDTO = objectMapper.convertValue(data, SignAndTimeDTO.class);
-                return signAndTimeDTO;
-            }
-
-            return null;
         }
 
+        Object data = responseEntity.getBody().get("data");
+        SignAndTimeDTO signAndTimeDTO = objectMapper.convertValue(data, SignAndTimeDTO.class);
+
+        return signAndTimeDTO;
     }
 
     /**
@@ -158,13 +180,39 @@ public class DownloadService {
      * @return
      */
     public List<ShareFileDTO> getDlink(GetDlinkDTO getDlinkDTO){
-        String cookieStr = dbtableCommonAccountService.getNextCommonAccountCookie();
+        DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
+        String cookieStr = account.getCookie();
         Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
-
         ResponseEntity<Map> responseEntity = requestService.requestDlink(getDlinkDTO,cookieMap);
-        List<Object> list = (List<Object>)responseEntity.getBody().getOrDefault("list", null);
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        if (!requestService.isSuccessResponse(responseEntity)){
+            //冻结
+            dbtableCommonAccountService.freezeCommonAccount(account.getId());
+
+            //再次获取
+            account = dbtableCommonAccountService.getNextCommonAccount();
+            cookieStr = account.getCookie();
+            cookieMap = requestService.strToCookieMap(cookieStr);
+            responseEntity = requestService.requestDlink(getDlinkDTO,cookieMap);
+
+            //还是失败,使用静态cookie重新请求一次
+            if (!requestService.isSuccessResponse(responseEntity)) responseEntity = requestService.requestDlink(getDlinkDTO,cookieMap);
+
+            List<Object> list = (List<Object>)responseEntity.getBody().getOrDefault("list", null);
+
+            //转化
+            List<ShareFileDTO> collect = list.stream()
+                    .map(o -> objectMapper.convertValue(o, ShareFileDTO.class))
+                    .collect(Collectors.toList());
+
+            return collect;
+        }
+
+
+        List<Object> list = (List<Object>)responseEntity.getBody().getOrDefault("list", null);
         //转化
         List<ShareFileDTO> collect = list.stream()
                 .map(o -> objectMapper.convertValue(o, ShareFileDTO.class))
@@ -181,9 +229,24 @@ public class DownloadService {
     public String getSvipDlink(String dlink){
 
         DbtableSvip nextSvip = dbtableSvipService.getNextSvip();
-
         ResponseEntity<String> responseEntity = requestService.requestSvipDlink(dlink,nextSvip.getSvipBduss());
-        return responseEntity.getHeaders().get("Location").get(0);
+
+        List<String> location = responseEntity.getHeaders().get("Location");
+
+        if (Objects.isNull(location) && location.size()==0){
+            //冻结
+            dbtableSvipService.freezeSvip(nextSvip.getId());
+
+            //再次获取
+            nextSvip = dbtableSvipService.getNextSvip();
+            responseEntity = requestService.requestSvipDlink(dlink,nextSvip.getSvipBduss());
+            location = responseEntity.getHeaders().get("Location");
+
+            //不存在
+            if (Objects.isNull(location) && location.size()==0) return null;
+        }
+
+        return location.get(0);
     }
 
     /**
@@ -196,6 +259,7 @@ public class DownloadService {
         for (int i = 0; i < dlinkList.size(); i++) {
             String dlink = dlinkList.get(i).getDlink().toString();
             String location = this.getSvipDlink(dlink);
+            if (StringUtils.isBlank(location)) continue;
             result.add(location);
         }
         return result;

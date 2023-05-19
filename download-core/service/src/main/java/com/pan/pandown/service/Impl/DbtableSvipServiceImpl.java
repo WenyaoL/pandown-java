@@ -160,11 +160,21 @@ public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, Dbtab
     }
 
     @Override
+    public List<DbtableSvip> listAvailableSvip() {
+        List<DbtableSvip> svipList = query().eq("state", 1).list();
+        return svipList;
+    }
+
+    @Override
     public DbtableSvip getNextSvip() {
         if(!redisService.hasKey(PANDOWN_SVIP+PANDOWN_SVIP_LIST)){
+            List<DbtableSvip> list = listAvailableSvip();
+            if (list.size()==0) return null;
+            redisService.multi();
+            redisService.del(PANDOWN_SVIP + PANDOWN_SVIP_IDX,PANDOWN_SVIP + PANDOWN_SVIP_LIST);
             redisService.set(PANDOWN_SVIP + PANDOWN_SVIP_IDX,0);
-            List<DbtableSvip> list = list();
-            redisService.lSet(PANDOWN_SVIP + PANDOWN_SVIP_LIST, list);
+            redisService.lPush(PANDOWN_SVIP + PANDOWN_SVIP_LIST, list);
+            redisService.exec();
         }
 
         long incr = redisService.incr(PANDOWN_SVIP + PANDOWN_SVIP_IDX,1);
@@ -173,5 +183,18 @@ public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, Dbtab
         return dbtableSvip;
     }
 
+    @Override
+    public boolean freezeSvip(Long id) {
+        boolean update = update().eq("id", id)
+                .set("state", 0)
+                .update();
 
+        List<DbtableSvip> list = listAvailableSvip();
+        redisService.multi();
+        redisService.del(PANDOWN_SVIP + PANDOWN_SVIP_IDX,PANDOWN_SVIP + PANDOWN_SVIP_LIST);
+        redisService.set(PANDOWN_SVIP + PANDOWN_SVIP_IDX,0);
+        redisService.lPush(PANDOWN_SVIP + PANDOWN_SVIP_LIST, list);
+        redisService.exec();
+        return update;
+    }
 }

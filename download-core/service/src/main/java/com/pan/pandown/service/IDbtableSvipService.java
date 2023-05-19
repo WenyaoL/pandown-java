@@ -51,10 +51,18 @@ public interface IDbtableSvipService extends IService<DbtableSvip> {
      */
     DbtableSvip addSvipDetail(DbtableSvip dbtableSvip);
 
+    List<DbtableSvip> listAvailableSvip();
 
     /**
      * 获取缓存中的下一个svip
      * @return
      */
     DbtableSvip getNextSvip();
+
+    /**
+     * 冻结一个svip账号
+     * @param id
+     * @return
+     */
+    boolean freezeSvip(Long id);
 }

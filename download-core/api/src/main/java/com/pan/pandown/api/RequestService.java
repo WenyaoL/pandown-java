@@ -220,7 +220,8 @@ public class RequestService {
         headers.set("User-Agent", "LogStatistic");
         headers.put("Cookie", mapToCookieList(new HashMap<String, String>() {{ put("BDUSS", BDUSS); }}));
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(uri, httpEntity, String.class);
+        //head请求
+        ResponseEntity<String> response = restTemplate.exchange(uri,HttpMethod.HEAD, httpEntity, String.class);
         return response;
     }
 
@@ -287,6 +288,11 @@ public class RequestService {
         });
 
         return result;
+    }
+
+
+    public boolean isSuccessResponse(ResponseEntity<Map> responseEntity){
+        return responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody().get("errno").toString().equals("0");
     }
 
 }

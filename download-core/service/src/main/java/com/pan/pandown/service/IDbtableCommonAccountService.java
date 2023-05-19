@@ -49,4 +49,18 @@ public interface IDbtableCommonAccountService extends IService<DbtableCommonAcco
      * @return
      */
     String getNextCommonAccountCookie();
+
+    List<DbtableCommonAccount>listAvailableAccount();
+
+    /**
+     * 获取下一个普通账号
+     * @return
+     */
+    DbtableCommonAccount getNextCommonAccount();
+
+    /**
+     * 冻结账号
+     * @return
+     */
+    boolean freezeCommonAccount(Long id);
 }

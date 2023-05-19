@@ -52,7 +52,8 @@ public class RedisConfig {
         // hash的value序列化方式采用jackson
         template.setHashValueSerializer(genericJackson2JsonRedisSerializer);
         template.afterPropertiesSet();
-
+        //开启事务支持
+        template.setEnableTransactionSupport(true);
         return template;
     }
 }

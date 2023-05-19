@@ -7,7 +7,9 @@ import com.pan.pandown.web.PandownApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -20,6 +22,9 @@ public class RedisServiceTest {
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Test
     public void test() throws Exception {
@@ -44,5 +49,28 @@ public class RedisServiceTest {
         redisService.set("test:123456",loginUser);
         Object o2 = redisService.get("test:123456");
         System.out.println(o2);
+    }
+
+    @Test
+    public void test2() throws Exception {
+        ArrayList<Object> arrayList = new ArrayList<>();
+        arrayList.add("A");
+        arrayList.add("B");
+        arrayList.add("C");
+        redisService.lPush("test:list",arrayList);
+
+        redisService.lPush("test:list",arrayList);
+
+
+    }
+
+    @Test
+    public void test3() throws Exception {
+        ArrayList<Object> arrayList = new ArrayList<>();
+
+        redisService.lPush("test:list2",arrayList);
+        redisService.lPush("test:list2",arrayList);
+
+
     }
 }

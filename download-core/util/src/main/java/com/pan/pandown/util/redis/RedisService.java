@@ -466,6 +466,22 @@ public final class RedisService {
         }
     }
 
+    /**
+     * 通过索引设置list中的值
+     * @param key
+     * @param index
+     * @param value
+     * @return
+     */
+    public boolean lSetIndex(String key,long index, Object value){
+        try {
+            redisTemplate.opsForList().set(key,index,value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     /**
      * 将list放入缓存
@@ -473,7 +489,7 @@ public final class RedisService {
      * @param key   键
      * @param value 值
      */
-    public boolean lSet(String key, Object value) {
+    public boolean lPush(String key, Object value) {
         try {
             redisTemplate.opsForList().rightPush(key, value);
             return true;
@@ -490,7 +506,7 @@ public final class RedisService {
      * @param value 值
      * @param time  时间(秒)
      */
-    public boolean lSet(String key, Object value, long time) {
+    public boolean lPush(String key, Object value, long time) {
         try {
             redisTemplate.opsForList().rightPush(key, value);
             if (time > 0)
@@ -504,6 +520,7 @@ public final class RedisService {
     }
 
 
+
     /**
      * 将list放入缓存
      *
@@ -511,7 +528,7 @@ public final class RedisService {
      * @param value 值
      * @return
      */
-    public boolean lSet(String key, List value) {
+    public boolean lPush(String key, List value) {
         try {
             redisTemplate.opsForList().rightPushAll(key, value);
             return true;
@@ -519,7 +536,6 @@ public final class RedisService {
             e.printStackTrace();
             return false;
         }
-
     }
 
 
@@ -531,7 +547,7 @@ public final class RedisService {
      * @param time  时间(秒)
      * @return
      */
-    public boolean lSet(String key, List value, long time) {
+    public boolean lPush(String key, List value, long time) {
         try {
             redisTemplate.opsForList().rightPushAll(key, value);
             if (time > 0)
@@ -584,5 +600,12 @@ public final class RedisService {
 
     }
 
+    public void multi(){
+        redisTemplate.multi();
+    }
+
+    public void exec(){
+        redisTemplate.exec();
+    }
 }
 

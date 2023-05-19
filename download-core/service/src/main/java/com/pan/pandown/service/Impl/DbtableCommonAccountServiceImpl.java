@@ -8,6 +8,7 @@ import com.pan.pandown.service.IDbtableCommonAccountService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
 import com.pan.pandown.util.redis.RedisService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import java.util.Map;
  * @author yalier
  * @since 2023-05-16
  */
+@Slf4j
 @Service
 public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAccountMapper, DbtableCommonAccount> implements IDbtableCommonAccountService {
 
@@ -135,10 +137,25 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
 
     @Override
     public String getNextCommonAccountCookie() {
+        DbtableCommonAccount account = getNextCommonAccount();
+        return account.getCookie();
+    }
+
+    @Override
+    public List<DbtableCommonAccount> listAvailableAccount() {
+        List<DbtableCommonAccount> accountList = query().eq("state", 1).list();
+        log.warn("accountList:{}",accountList.toString());
+        return accountList;
+    }
+
+    public DbtableCommonAccount getNextCommonAccount(){
         boolean b = redisService.hasKey(PANDOWN_COMMON_ACCOUNT_LIST);
         if (!b){
-            List<DbtableCommonAccount> list = list();
-            redisService.lSet(PANDOWN_COMMON_ACCOUNT_LIST, list);
+            List<DbtableCommonAccount> list = listAvailableAccount();
+            if (list.size()==0) return null;
+
+
+            redisService.lPush(PANDOWN_COMMON_ACCOUNT_LIST, list);
             redisService.set(PANDOWN_COMMON_ACCOUNT_IDX,0L);
         }
 
@@ -146,7 +163,20 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
         long l = redisService.lGetListSize(PANDOWN_COMMON_ACCOUNT_LIST);
 
         DbtableCommonAccount account = (DbtableCommonAccount)redisService.lGetIndex(PANDOWN_COMMON_ACCOUNT_LIST, incr % l);
+        return account;
+    }
 
-        return account.getCookie();
+
+    @Override
+    public boolean freezeCommonAccount(Long id) {
+        boolean update = update().eq("id", id)
+                .set("state", 0)
+                .update();
+        List<DbtableCommonAccount> list = listAvailableAccount();
+
+        redisService.del(PANDOWN_COMMON_ACCOUNT_LIST,PANDOWN_COMMON_ACCOUNT_IDX);
+        redisService.lPush(PANDOWN_COMMON_ACCOUNT_LIST, list);
+        redisService.set(PANDOWN_COMMON_ACCOUNT_IDX,0L);
+        return update;
     }
 }
