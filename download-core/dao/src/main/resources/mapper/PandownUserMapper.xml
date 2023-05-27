@@ -38,5 +38,11 @@
             )
         )
     </select>
+    <select id="pageListUserInfo" resultType="com.pan.pandown.util.PO.PandownUserDetailPO">
+        SELECT u.id,u.username,u.email,uf.parse_num,uf.parse_flow,uf.limit_flow,uf.state,r.role_name FROM `pandown_user` AS u
+        INNER JOIN `pandown_user_flow` AS uf ON u.id = uf.id
+        INNER JOIN `pandown_user_role` AS ur ON u.id = ur.user_id
+        INNER JOIN `pandown_role` AS r ON ur.role_id = r.id
+    </select>
 
 </mapper>

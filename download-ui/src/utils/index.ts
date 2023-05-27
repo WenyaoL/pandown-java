@@ -112,7 +112,8 @@ export function param2Obj(url:string) {
   return obj
 }
 
-export function formatSize(size:number) {
+export function formatSize(size:number,showZero=false) {
+  if (size == 0 && showZero) return '0KB'
   if (size == 0) return '—'
   // 将字节数转换为 GB 或 MB，并保留两位小数
   if (size < 1024 * 1024) {
@@ -122,4 +123,8 @@ export function formatSize(size:number) {
   } else {
       return (size / (1024 * 1024 * 1024)).toFixed(2) + ' GB'
   }
+}
+
+export function copyStringToClipboard(str: string) {
+  window.navigator.clipboard.writeText(str)
 }

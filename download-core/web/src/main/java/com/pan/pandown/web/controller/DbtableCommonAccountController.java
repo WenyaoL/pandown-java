@@ -36,6 +36,13 @@ public class DbtableCommonAccountController {
     @Autowired
     private IDbtableCommonAccountService dbtableCommonAccountService;
 
+    @PostMapping("/getAccountNum")
+    @ApiOperation(value = "获取普通账号数接口", notes = "返回普通账号数量和普通可用账号数量", httpMethod = "POST")
+    public BaseResponse getAccountNum() {
+        Map numDetail = dbtableCommonAccountService.getAccountNumDetail();
+        return new SuccessResponse(numDetail);
+    }
+
     @PostMapping("/getAccountDetail")
     @ApiOperation(value = "获取普通账号信息接口", notes = "返回普通的账号信息", httpMethod = "POST")
     public BaseResponse getAccountDetail() {

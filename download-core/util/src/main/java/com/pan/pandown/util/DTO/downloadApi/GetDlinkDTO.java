@@ -1,6 +1,8 @@
 package com.pan.pandown.util.DTO.downloadApi;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,9 +13,10 @@ import java.util.List;
  * @since 2023-05-04
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class GetDlinkDTO {
 
-    private List dlinkList;
 
     private String sign;
 

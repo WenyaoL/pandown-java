@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,17 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
     private final String PANDOWN_COMMON_ACCOUNT_IDX = "Pandown_common_account:for_idx";
     private final String PANDOWN_COMMON_ACCOUNT_LIST = "Pandown_common_account:account_list";
 
+
+    @Override
+    public Map getAccountNumDetail() {
+        int count = count();
+        Long accountNumByState = baseMapper.getAccountNumByState(1);
+        HashMap<String, Object> map = new HashMap<String, Object>() {{
+            put("accountNum", count);
+            put("availableAccountNum", accountNumByState);
+        }};
+        return map;
+    }
 
     @Override
     public List<DbtableCommonAccount> listAccountDetail() {

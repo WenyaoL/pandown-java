@@ -90,6 +90,11 @@ public class TokenService {
         return false;
     }
 
+    public Map<String, Claim> parseToken(String token){
+        Map<String, Claim> claimMap = jwtService.parseToken(token);
+        return claimMap;
+    }
+
     public LoginUser verifyToken(String token){
         Map<String, Claim> claimMap = jwtService.parseToken(token);
         String s = claimMap.get(LOGIN_USER_KEY).asString();

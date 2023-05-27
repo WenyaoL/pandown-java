@@ -21,6 +21,7 @@ service.interceptors.request.use(
       // please modify it according to the actual situation
       config.headers['token'] = getToken()
     }
+    config.withCredentials = true
     return config
   },
   error => {
@@ -48,7 +49,7 @@ service.interceptors.response.use(
       ElMessage ({
         message: res.msg || 'Error',
         type: 'error',
-        duration: 5 * 1000
+        duration: 3 * 1000
       })
       return Promise.reject(new Error(res.message || 'Error'))
     } else {
@@ -59,7 +60,7 @@ service.interceptors.response.use(
     ElMessage({
       message: error.message,
       type: 'error',
-      duration: 5 * 1000
+      duration: 3 * 1000
     })
     return Promise.reject(error)
   }

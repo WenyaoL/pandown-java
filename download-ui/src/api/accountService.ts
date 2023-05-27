@@ -39,6 +39,14 @@ export function updateSvipAccount(data:any){
   })
 }
 
+export function getCommonAccountNum(data?:any){
+  return request({
+    url: 'api/dbtable-common-account/getAccountNum',
+    method: 'post',
+    data
+  })
+}
+
 export function getCommonAccountDetail(){
   return request({
     url: 'api/dbtable-common-account/getAccountDetail',
@@ -70,14 +78,18 @@ export function deleteCommonAccount(data:any){
   })
 }
 
+
+
 export default{
   getSvipAccountNum,
   getSvipAccountDetail,
   addSvipAccount,
   deleteSvipAccount,
   updateSvipAccount,
+  getCommonAccountNum,
   getCommonAccountDetail,
   addCommonAccount,
   updateCommonAccount,
-  deleteCommonAccount
+  deleteCommonAccount,
+
 }

@@ -1,7 +1,10 @@
 package com.pan.pandown.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pan.pandown.dao.entity.PandownUser;
+import com.pan.pandown.util.DTO.pandownUserApi.UserRegisterDTO;
+import com.pan.pandown.util.PO.PandownUserDetailPO;
 import com.pan.pandown.util.constants.RegisterCode;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -26,6 +29,7 @@ public interface IPandownUserService extends IService<PandownUser>, UserDetailsS
      * @return
      */
     RegisterCode userRegister(String username, String password, String email, String captcha);
+    RegisterCode userRegister(UserRegisterDTO userRegisterDTO);
 
     /**
      * 用户登录
@@ -71,4 +75,8 @@ public interface IPandownUserService extends IService<PandownUser>, UserDetailsS
      * @return
      */
     RegisterCode resetPassword(String password, String email, String captcha);
+
+
+    IPage<PandownUserDetailPO> pageUserInfo(int pageNum, int pageSize);
+
 }

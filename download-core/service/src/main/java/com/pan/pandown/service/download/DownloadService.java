@@ -7,8 +7,9 @@ import com.pan.pandown.dao.entity.DbtableCommonAccount;
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.service.IDbtableCommonAccountService;
 import com.pan.pandown.service.IDbtableSvipService;
+import com.pan.pandown.service.IPandownParseService;
+import com.pan.pandown.service.IPandownUserFlowService;
 import com.pan.pandown.util.DTO.downloadApi.*;
-import com.pan.pandown.util.redis.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,11 @@ public class DownloadService {
     @Autowired
     private IDbtableCommonAccountService dbtableCommonAccountService;
 
+    @Autowired
+    private IPandownUserFlowService pandownUserFlowService;
 
+    @Autowired
+    private IPandownParseService pandownParseService;
 
     /**
      * 返回所有分享信息
@@ -185,6 +190,7 @@ public class DownloadService {
         Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
         ResponseEntity<Map> responseEntity = requestService.requestDlink(getDlinkDTO,cookieMap);
 
+        //json转Java对象
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -223,13 +229,13 @@ public class DownloadService {
 
     /**
      * svip下载链接获取
-     * @param dlink
+     * @param shareFileDTO
      * @return
      */
-    public String getSvipDlink(String dlink){
+    public String getSvipDlink(ShareFileDTO shareFileDTO,Long id) throws Exception{
 
         DbtableSvip nextSvip = dbtableSvipService.getNextSvip();
-        ResponseEntity<String> responseEntity = requestService.requestSvipDlink(dlink,nextSvip.getSvipBduss());
+        ResponseEntity<String> responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
 
         List<String> location = responseEntity.getHeaders().get("Location");
 
@@ -239,33 +245,77 @@ public class DownloadService {
 
             //再次获取
             nextSvip = dbtableSvipService.getNextSvip();
-            responseEntity = requestService.requestSvipDlink(dlink,nextSvip.getSvipBduss());
+            responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
             location = responseEntity.getHeaders().get("Location");
 
             //不存在
             if (Objects.isNull(location) && location.size()==0) return null;
         }
 
-        return location.get(0);
+        //添加流量
+        boolean b = pandownUserFlowService.addUserFlow(id, shareFileDTO.getSize());
+
+        if (!b) throw new RuntimeException("流量不足");
+
+        String link = location.get(0);
+        shareFileDTO.setSvipDlink(link);
+        pandownParseService.saveByShareFileDTO(shareFileDTO,id,nextSvip.getId());
+        return link;
     }
 
     /**
      * svip下载链接获取
-     * @param dlinkList
+     * @param getSvipDlinkDTO
+     * @param id 解析用户的id
      * @return
      */
-    public List getSvipDlink(List<ShareFileDTO> dlinkList){
+    public List<ShareFileDTO> getSvipDlink(GetSvipDlinkDTO getSvipDlinkDTO,Long id) throws Exception {
+        String sign = getSvipDlinkDTO.getSign();
+        Long timestamp = getSvipDlinkDTO.getTimestamp();
+        String seckey = getSvipDlinkDTO.getSeckey();
+        String shareid = getSvipDlinkDTO.getShareid();
+        String uk = getSvipDlinkDTO.getUk();
+        List<ShareFileDTO> shareFileList = getSvipDlinkDTO.getShareFileList();
+
+
         List result = new ArrayList();
-        for (int i = 0; i < dlinkList.size(); i++) {
-            String dlink = dlinkList.get(i).getDlink().toString();
-            String location = this.getSvipDlink(dlink);
-            if (StringUtils.isBlank(location)) continue;
-            result.add(location);
+        for (int i = 0; i < shareFileList.size(); i++) {
+            ShareFileDTO shareFileDTO = shareFileList.get(i);
+
+            String dlink = shareFileDTO.getDlink();
+            //如果普通连接为空，去提取
+            if (StringUtils.isBlank(dlink)){
+                ArrayList fileIdList = new ArrayList();
+                fileIdList.add(shareFileDTO.getFs_id());
+                GetDlinkDTO getDlinkDTO = new GetDlinkDTO();
+                getDlinkDTO.setFsIdList(fileIdList);
+                getDlinkDTO.setUk(uk);
+                getDlinkDTO.setSeckey(seckey);
+                getDlinkDTO.setSign(sign);
+                getDlinkDTO.setTimestamp(timestamp);
+                getDlinkDTO.setShareid(shareid);
+                //获取普通连接
+                List<ShareFileDTO> shareFileDTOList = getDlink(getDlinkDTO);
+
+                if (Objects.nonNull(shareFileDTOList) && shareFileDTOList.size()>0){
+                    shareFileDTO = shareFileDTOList.get(0);
+                }
+            }
+
+            //获取SVIP连接
+
+            String link = this.getSvipDlink(shareFileDTO,id);
+            if (StringUtils.isBlank(link)) continue;
+            //填充SvipDlink字段
+            shareFileDTO.setSvipDlink(link);
+
+
+            result.add(shareFileDTO);
         }
         return result;
     }
 
-    public Object getAllSvipdLink(ListAllSvipDlinkDTO listAllSvipDlinkDTO){
+    public List<ShareFileDTO> getAllSvipdLink(ListAllSvipDlinkDTO listAllSvipDlinkDTO,Long id) throws Exception {
         String surl = listAllSvipDlinkDTO.getSurl();
         String pwd = listAllSvipDlinkDTO.getPwd();
         String seckey = listAllSvipDlinkDTO.getSeckey();
@@ -273,8 +323,8 @@ public class DownloadService {
         String shareid = listAllSvipDlinkDTO.getShareid();
         List<ShareFileDTO> shareFileDTOList = listAllSvipDlinkDTO.getShareFileList();
 
+        //解析文件id列表
         ArrayList<String> fileidList = new ArrayList<>();
-
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -282,6 +332,7 @@ public class DownloadService {
         for (int i = 0;i<shareFileDTOList.size();i++){
             ShareFileDTO shareFile = shareFileDTOList.get(i);
             int isdir = shareFile.getIsdir();
+            //如果是目录，解析目录，提取目录下所有的fs_id
             if(isdir==1){
                 List<Map> list = listFiles(surl, pwd, shareFile.getPath(), new ArrayList());
                 List collect = list.stream()
@@ -302,16 +353,17 @@ public class DownloadService {
         getDlinkDTO.setSign(signAndTime.getSign());
         getDlinkDTO.setTimestamp(signAndTime.getTimestamp());
         getDlinkDTO.setFsIdList(fileidList);
-        List<ShareFileDTO> list = getDlink(getDlinkDTO);
+        List<ShareFileDTO> list = getDlink(getDlinkDTO); //获取所有文件的普通下载对象
 
+        ArrayList<ShareFileDTO> result = new ArrayList<>();
         //用dlink换svipDlink
         for (int i = 0; i < list.size(); i++) {
             ShareFileDTO shareFileDTO = list.get(i);
-            String dlink = list.get(i).getDlink();
-            String svipDlink = getSvipDlink(dlink);
-            shareFileDTO.setSvipDlink(svipDlink);
+            String link = getSvipDlink(shareFileDTO,id);
+            shareFileDTO.setSvipDlink(link);
+            result.add(shareFileDTO);
         }
 
-        return list;
+        return result;
     }
 }

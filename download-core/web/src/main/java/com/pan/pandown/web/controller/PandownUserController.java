@@ -2,13 +2,14 @@ package com.pan.pandown.web.controller;
 
 
 import com.pan.pandown.service.IPandownUserService;
-import com.pan.pandown.util.DTO.PandownUserApi.UserLoginDTO;
-import com.pan.pandown.util.DTO.PandownUserApi.UserRegisterDTO;
+import com.pan.pandown.util.DTO.pandownUserApi.UserLoginDTO;
+import com.pan.pandown.util.DTO.pandownUserApi.UserRegisterDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
 import com.pan.pandown.util.constants.RegisterCode;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +29,7 @@ import java.util.Objects;
  * @author wenyao(yalier)
  * @since 2023-04-20
  */
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class PandownUserController {
@@ -38,12 +40,7 @@ public class PandownUserController {
     @PostMapping("/register")
     @ApiOperation(value = "用户注册接口",notes = "用户注册",httpMethod = "POST")
     public BaseResponse userRegister(@Valid @RequestBody UserRegisterDTO userRegisterDTO){
-        RegisterCode registerCode = pandownUserService.userRegister(
-                userRegisterDTO.getUsername(),
-                userRegisterDTO.getPassword(),
-                userRegisterDTO.getEmail(),
-                userRegisterDTO.getCaptcha()
-        );
+        RegisterCode registerCode = pandownUserService.userRegister(userRegisterDTO);
         if(registerCode.getCode().equals("200"))return new SuccessResponse(registerCode.getName());
         else return new FailResponse(registerCode.getName());
     }
@@ -73,7 +70,6 @@ public class PandownUserController {
     public BaseResponse userInfo(@RequestBody Map<String,String> map){
         if(map.get("token") == null) return new FailResponse("token不存在");
         Map userInfo = pandownUserService.getUserInfo(map.get("token"));
-        System.out.println(userInfo);
         return new SuccessResponse(userInfo);
     }
 

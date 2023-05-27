@@ -73,7 +73,7 @@ export const asyncRoutes = [
     path: '/setting',
     component: Layout,
     redirect: '/setting/accountSetting',
-    meta: { title: '设置', icon: 'setting',roles: ['admin'] },
+    meta: { title: '管理', icon: 'setting',roles: ['admin'] },
     children: [
       {
         path:'accountSetting',
@@ -89,6 +89,11 @@ export const asyncRoutes = [
         path:'commonAccountManage',
         component: () => import('@/views/setting/CommonAccountManagePage.vue'),
         meta: { title: '普通账号管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
+      },
+      {
+        path:'userManage',
+        component: () => import('@/views/setting/UserManagePage.vue'),
+        meta: { title: '用户管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
       },
     ]
   },

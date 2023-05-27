@@ -2,20 +2,12 @@
   <div class="link-container">
     <el-row>
       <el-col :offset="0" :span="23">
+        <div class="button-group">
+          <el-button-group class="setting-button-group">
+            <el-button class="button-item" type="primary" @click="aria2SettingDialogVisible = true">Aria2配置</el-button>
+          </el-button-group>
+        </div>
         <el-collapse v-model="activeCollapseNames" class="collapse-panel">
-          <el-collapse-item name="Option">
-            <template #title>
-              <span class="collapse-title">配置: </span><el-icon class="header-icon"><info-filled /></el-icon>
-            </template>
-            <div class="button-group">
-
-              <el-button-group class="setting-button-group">
-                <el-button class="button-item" type="primary"
-                  @click="aria2SettingDialogVisible = true">Aria2配置</el-button>
-              </el-button-group>
-            </div>
-          </el-collapse-item>
-
           <el-collapse-item title="分享描述" name="Describe" :size='"small"'>
             <template #title>
               <span class="collapse-title">分享描述: </span><el-icon class="header-icon"><info-filled /></el-icon>
@@ -50,10 +42,11 @@
               <el-button-group class="share-button-group">
                 <el-button size="small" class="button-item" type="primary" @click="previousStep">上一级</el-button>
                 <el-button size="small" class="button-item" type="primary" @click="toRootStep">返回根目录</el-button>
-                
+
               </el-button-group>
               <el-button-group class="share-button-group">
-                <el-button size="small" class="button-item" type="primary" @click="downloadSelected">下载所选文件</el-button>
+                <el-button size="small" class="button-item" type="primary"
+                  @click="downloadSelectedHandle">下载所选文件</el-button>
               </el-button-group>
             </div>
           </template>
@@ -131,8 +124,20 @@
     <el-dialog v-model="downloadDialogVisible" title="下载当前文件">
 
       <p>下载提示:将提供Aria2下载,IDM下载,浏览器下载。(通过复制链接去下载，需修改浏览器 User Agent为LogStatistic 后下载。)</p>
-      <el-button type="primary" link size="small" @click="copyLink(currDownloadList[0].svipDlink)">复制链接</el-button>
-      <el-divider />
+      <el-table :data="currDownloadList" v-loading="downloadListLoading" max-height="315">
+        <el-table-column property="server_filename" label="文件名" width="380" />
+        <el-table-column property="size" label="size">
+          <template #default="scope">
+            {{ formatSize(scope.row.size) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template #default="scope">
+            <el-button type="primary" link size="small" @click="copyLink(scope.row.svipDlink)">复制</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="downloadFileByAria2()">Aria2下载</el-button>
@@ -141,9 +146,14 @@
     </el-dialog>
 
     <el-dialog v-model="downloadAllFileDialogVisible" title="批量下载任务">
+      <div>可以下载包含所有链接的txt文件:<el-button type="text" @click="downloadAllLinkTxt">下载链接文件</el-button></div>
       <el-table :data="currDownloadList" v-loading="downloadListLoading" max-height="315">
-        <el-table-column property="server_filename" label="文件名" width="150" />
-        <el-table-column property="size" label="size" width="200" />
+        <el-table-column property="server_filename" label="文件名" width="380" />
+        <el-table-column property="size" label="size">
+          <template #default="scope">
+            {{ formatSize(scope.row.size) }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
           <template #default="scope">
             <el-button type="primary" link size="small" @click="copyLink(scope.row.svipDlink)">复制</el-button>
@@ -170,6 +180,7 @@ import { simpleInstance } from '@/api/request'
 import path from 'path-browserify'
 import { InfoFilled } from '@element-plus/icons-vue'
 import { getSvgByName } from '@/components/StaticIcon/svgData'
+import { ElMessageBox } from 'element-plus'
 
 interface ShareFile {
   fs_id: any,
@@ -202,7 +213,7 @@ const listLoading = ref(false) //列表加载状态
 const list = ref<ShareFile[]>([]) //当前数据列表
 const selectedList = ref<ShareFile[]>([]) //当前选中数据
 const currDownloadList = ref<any[]>([]) //当前要下载的文件
-const activeCollapseNames = ref<String[]>([])  //打开的折叠板
+const activeCollapseNames = ref<String[]>(['Describe'])  //打开的折叠板
 
 
 const sharerInfo = reactive({
@@ -346,7 +357,7 @@ const fetchSvipDlink = async (form: any) => {
 }
 
 /**
- * 文件下载
+ * 单文件下载
  */
 const downloadFile = async (row: ShareFile) => {
   //downloadDialogVisible.value = true
@@ -358,21 +369,24 @@ const downloadFile = async (row: ShareFile) => {
   const { sign, timestamp } = signAndTime
 
   const form = {
-    fsIdList: [fs_id],
+    shareFileList: [row],
     timestamp,
     sign,
     seckey,
     shareid,
-    uk: uk
+    uk
   }
   const svipDlinkList = await fetchSvipDlink(form)
+  console.log(svipDlinkList);
+
   if (!svipDlinkList || svipDlinkList.length == 0) return
 
-  row.svipDlink = svipDlinkList[0]
+  row.svipDlink = svipDlinkList[0].svipDlink
   currDownloadList.value = [row]
   downloadDialogVisible.value = true
   return
 }
+
 
 /**
  * aria2下载
@@ -417,6 +431,15 @@ const aria2Download = async (downloadUrl: string, path: string, server_filename:
 }
 
 /**
+ * aria2下载按钮
+ */
+const downloadFileByAria2 = () => {
+  currDownloadList.value.forEach(row => {
+    aria2Download(row.svipDlink, row.path, row.server_filename)
+  })
+}
+
+/**
  * 普通浏览器下载(因百度跨域限制和浏览器拒绝设置User-Agent的安全行为，该方法废弃)
  * @param downloadUrl 
  * @param path 
@@ -438,28 +461,18 @@ const commonDownload = (downloadUrl: string, path: string, server_filename: stri
     link.setAttribute('download', path + server_filename);
     document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link)
   })
 }
-
-const IDMDownload = (downloadUrl: string, path: string, server_filename: string) => {
-
-}
-
-const downloadFileByAria2 = () => {
-  currDownloadList.value.forEach(row => {
-    aria2Download(row.svipDlink, row.path, row.server_filename)
-  })
-
-}
-const downloadFileByIDM = () => {
-
-}
-
+/**
+ * 浏览器下载按钮处理（弃用）
+ */
 const downloadFileByCommon = () => {
   currDownloadList.value.forEach(row => {
     commonDownload(row.svipDlink, row.path, row.server_filename)
   })
 }
+
 /**
  * 文件点击
  * @param row 
@@ -470,21 +483,75 @@ const handleFileClick = (row: ShareFile) => {
   }
 
   if (row.isdir == 1) { // 是目录
-
     openDirectory(row.path)
   } else { // 单文件，请求svipdlink
-    downloadFile(row)
+    ElMessageBox.confirm(
+      '是否解析下载该文件?(消耗流量)',
+      'Warning',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '撤销',
+        type: 'warning',
+      }
+    ).then(() => {
+      downloadFile(row)
+    })
   }
 }
 
+
+
+/**
+ * 复制link字符串
+ * @param link 
+ */
 const copyLink = (link: string) => {
   window.navigator.clipboard.writeText(link)
 }
+
 
 const handleSelectionChange = (val: ShareFile[]) => {
   selectedList.value = val
 }
 
+/**
+ * 下载链接的txt文件
+ */
+const downloadAllLinkTxt = () => {
+  const linkList: string[] = []
+  currDownloadList.value.forEach(row => {
+    linkList.push(row.svipDlink)
+  })
+
+  const url = window.URL.createObjectURL(new Blob([linkList.join("\n")]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = "link.txt"
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link)
+
+}
+
+const downloadSelectedHandle = () => {
+  ElMessageBox.confirm(
+    '是否解析选中的文件,包含文件夹?(消耗流量)',
+    'Warning',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '撤销',
+      type: 'warning',
+    }
+  ).then(() => {
+    downloadSelected()
+  })
+}
+
+
+
+/**
+ * 下载选中的文件
+ */
 const downloadSelected = () => {
   // 获取选中行的数据并进行相应处理
   downloadAllFileDialogVisible.value = true
@@ -497,18 +564,18 @@ const downloadSelected = () => {
     seckey: shareLinkDetail.seckey,
     shareFileList: selectedList.value
   }).then(res => {
-    console.log(res);
-    const list = res.data as any[]
-    list.forEach(row => {
-      row.size = formatSize(row.size)
-    })
     currDownloadList.value = res.data
-
+    downloadListLoading.value = false
+  }).catch(err => {
+    currDownloadList.value = []
     downloadListLoading.value = false
   })
 }
 
 
+/**
+ * 返回上一级目录
+ */
 const previousStep = () => {
   if (!currPath.value) return
 
@@ -520,6 +587,9 @@ const previousStep = () => {
   openDirectory(previousPath)
 }
 
+/**
+ * 返回根目录
+ */
 const toRootStep = () => {
   loadData()
   currPath.value = ""
@@ -580,7 +650,7 @@ onMounted(() => {
 }
 
 .setting-button-group {
-  margin-left: 5px;
+  margin: 20px 20px;
 }
 
 .share-button-group {

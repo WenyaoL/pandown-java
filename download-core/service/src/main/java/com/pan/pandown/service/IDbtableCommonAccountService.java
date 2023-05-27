@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.pan.pandown.dao.entity.DbtableSvip;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -15,6 +16,9 @@ import java.util.List;
  * @since 2023-05-16
  */
 public interface IDbtableCommonAccountService extends IService<DbtableCommonAccount> {
+
+
+    Map getAccountNumDetail();
 
     /**
      * 列出所有账号信息

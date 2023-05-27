@@ -38,7 +38,7 @@ public class CodeGenerator {
 
 
     //表名映射(','号分割符)
-    private static String INCLUDE_TABLES = "dbtable_common_account";
+    private static String INCLUDE_TABLES = "pandown_parse";
 
     //包名配置
     private static String CONTROLLER = "web.controller";

@@ -1,11 +1,6 @@
 import AccountService from "@/api/accountService"
 
 
-const state = {
-  token: '',
-  name: '',
-  avatar: ''
-}
 
 const mutations = {
 
@@ -30,12 +25,20 @@ const actions = {
       console.log(err);
       return err
     })
+  },
+
+  getCommonAccountNum(){
+    return AccountService.getCommonAccountNum()
+    .then(res=>{
+      return res.data
+    }).catch(err=>{
+      return err
+    })
   }
 }
 
 export default {
   namespaced: true,
-  state,
   mutations,
   actions
 }

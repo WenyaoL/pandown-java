@@ -13,4 +13,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IPandownUserRoleService extends IService<PandownUserRole> {
 
+    /**
+     * 初始化用户角色
+     * @return
+     */
+    PandownUserRole initCommonUserRole(Long id);
 }

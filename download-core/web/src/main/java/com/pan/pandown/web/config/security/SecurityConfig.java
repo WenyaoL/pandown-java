@@ -41,7 +41,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         //以下接口不需要认证
         http.authorizeRequests()
-                .antMatchers("/user/login","/user/register","/user/postCaptcha","/user/postCaptchaByForgetPwd","/user/resetPassword").anonymous();
+                .antMatchers(
+                        "/user/login",
+                        "/user/register",
+                        "/user/postCaptcha",
+                        "/user/postCaptchaByForgetPwd",
+                        "/user/resetPassword"
+                        ).anonymous();
 
         //配置访问权限控制
         List<PandownPermission> list = pandownPermissionService.list();

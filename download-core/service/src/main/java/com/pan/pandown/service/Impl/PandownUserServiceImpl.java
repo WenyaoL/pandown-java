@@ -1,16 +1,21 @@
 package com.pan.pandown.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pan.pandown.dao.entity.PandownUser;
 import com.pan.pandown.dao.entity.PandownUserRole;
 import com.pan.pandown.dao.mapper.PandownUserMapper;
 import com.pan.pandown.dao.model.LoginUser;
+import com.pan.pandown.service.IPandownUserFlowService;
 import com.pan.pandown.service.IPandownUserRoleService;
 import com.pan.pandown.service.IPandownUserService;
 import com.pan.pandown.service.login.EmailService;
 import com.pan.pandown.service.login.TokenService;
 import com.pan.pandown.util.DTO.SpringGrantedAuthority;
+import com.pan.pandown.util.DTO.pandownUserApi.UserRegisterDTO;
+import com.pan.pandown.util.PO.PandownUserDetailPO;
 import com.pan.pandown.util.constants.RegisterCode;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
 import com.pan.pandown.util.redis.RedisService;
@@ -66,8 +71,11 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @Resource
+    @Autowired
     private IPandownUserRoleService pandownUserRoleService;
+
+    @Autowired
+    private IPandownUserFlowService pandownUserFlowService;
 
     public List<GrantedAuthority> createAuthorityList(String... authorities) {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>(authorities.length);
@@ -116,21 +124,32 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
         //雪花id
         long nextId = snowflakeGenerator.nextId();
 
-        //验证码相同并保存
-        if(registerCaptcha.toString().equals(captcha)
-                && save(new PandownUser(nextId,username,bCryptPasswordEncoder.encode(password),email))){
-            PandownUserRole pandownUserRole = new PandownUserRole();
-            pandownUserRole.setUserId(nextId);
-            pandownUserRole.setRoleId(2);  //普通用户
-            pandownUserRole.setCreator("system");
-            pandownUserRole.setCreateTime(LocalDateTime.now());
-            pandownUserRoleService.save(pandownUserRole);
+        //验证码不相同
+        if(!registerCaptcha.toString().equals(captcha)) return RegisterCode.FAIL_CAPTCHA_ERROR;
 
-            redisService.hdel("user_register:captcha",email);
-            return RegisterCode.SUCCESS;
-        }
+        //保存用户信息
+        save(new PandownUser(nextId,username,bCryptPasswordEncoder.encode(password),email));
 
-        return RegisterCode.FAIL;
+        //初始化普通用户权限
+        pandownUserRoleService.initCommonUserRole(nextId);
+
+        //初始化用户流量表
+        pandownUserFlowService.initUserFlow(nextId);
+
+        //删除验证码
+        redisService.hdel("user_register:captcha",email);
+
+        return RegisterCode.SUCCESS;
+    }
+
+    @Override
+    public RegisterCode userRegister(UserRegisterDTO userRegisterDTO){
+        RegisterCode registerCode = userRegister(
+                userRegisterDTO.getUsername(),
+                userRegisterDTO.getPassword(),
+                userRegisterDTO.getEmail(),
+                userRegisterDTO.getCaptcha());
+        return registerCode;
     }
 
     @Override
@@ -215,5 +234,12 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
         }
 
         return RegisterCode.FAIL;
+    }
+
+    @Override
+    public IPage<PandownUserDetailPO> pageUserInfo(int pageNum,int pageSize) {
+        Page<PandownUserDetailPO> pandownUserDetailPOPage = new Page<>(pageNum,pageSize);
+        Page<PandownUserDetailPO> page = baseMapper.pageListUserInfo(pandownUserDetailPOPage);
+        return page;
     }
 }

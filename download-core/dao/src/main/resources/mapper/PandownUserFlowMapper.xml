@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pan.pandown.dao.mapper.PandownUserFlowMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.pan.pandown.dao.entity.PandownUserFlow">
+        <id column="id" property="id" />
+        <result column="parse_num" property="parseNum" />
+        <result column="parse_flow" property="parseFlow" />
+        <result column="limit_flow" property="limitFlow" />
+        <result column="state" property="state" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, parse_num, parse_flow, limit_flow, state
+    </sql>
+
+</mapper>
