@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <h2>欢迎来到,<span>{{ userName }}</span></h2>
 
-    <PanelGroup :parseFlow="flowData.parseFlow" :parseNum="flowData.parseNum" :residueFlow="residueFlow" />
+    <PanelGroup :parseFlow="flowData.parseFlow" :parseNum="flowData.parseNum" :residueFlow="flowData.limitFlow" />
 
     <el-descriptions title="用户信息">
       <el-descriptions-item label="用户名">{{ userName }}</el-descriptions-item>
@@ -11,7 +11,7 @@
       </el-descriptions-item>
       <el-descriptions-item label="已解析流量">{{ formatSize(flowData.parseFlow) }}</el-descriptions-item>
       <el-descriptions-item label="已解析次数">{{ flowData.parseNum }}</el-descriptions-item>
-      <el-descriptions-item label="剩余流量">{{ formatSize(residueFlow,true) }}</el-descriptions-item>
+      <el-descriptions-item label="剩余流量">{{ formatSize(flowData.limitFlow,true) }}</el-descriptions-item>
     </el-descriptions>
     <h2>声明</h2>
     <p>
@@ -42,17 +42,11 @@ export default defineComponent({
     const userName = computed(() => store.state.user.name)
     const roles = computed(() => store.state.user.roles)
     const flowData = reactive({
-      limitFlow: 0,
-      parseFlow: 0,
-      parseNum: 0,
+      limitFlow: 0, //剩余流量
+      parseFlow: 0, //解析流量
+      parseNum: 0, //解析次数
       state: 0
     })
-    const residueFlow = computed(() => {
-      const flow =  flowData.limitFlow - flowData.parseFlow
-      if(flow<0)return 0
-      return flow
-    })
-
 
     getUserFlowInfo().then(response => {
       const { limitFlow, parseFlow, parseNum, state } = response.data
@@ -66,7 +60,6 @@ export default defineComponent({
       userName,
       roles,
       flowData,
-      residueFlow,
       formatSize,
       PanelGroup
     }

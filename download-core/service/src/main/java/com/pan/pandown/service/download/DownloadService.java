@@ -253,7 +253,7 @@ public class DownloadService {
         }
 
         //添加流量
-        boolean b = pandownUserFlowService.addUserFlow(id, shareFileDTO.getSize());
+        boolean b = pandownUserFlowService.consumeUserFlow(id, shareFileDTO.getSize());
 
         if (!b) throw new RuntimeException("流量不足");
 

@@ -30,12 +30,12 @@ public interface IPandownUserFlowService extends IService<PandownUserFlow> {
     PandownUserFlow initUserFlow(Long id,Integer state,Long limitFlow);
 
     /**
-     * 添加用户流量
+     * 消耗用户流量
      * @param id
      * @param flow
      * @return
      */
-    boolean addUserFlow(Long id,Long flow);
+    boolean consumeUserFlow(Long id,Long flow);
 
     /**
      * 判断当前用户流量是否可用

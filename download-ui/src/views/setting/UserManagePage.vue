@@ -22,7 +22,7 @@
                                 <el-col :span="8"><span class="des-item">解析文件数: </span>{{ props.row.parseNum }}</el-col>
                                 <el-col :span="8"><span class="des-item">解析流量: </span>{{ formatSize(props.row.parseFlow)
                                 }}</el-col>
-                                <el-col :span="8"><span class="des-item">限制流量: </span>{{ formatSize(props.row.limitFlow)
+                                <el-col :span="8"><span class="des-item">流量限额: </span>{{ formatSize(props.row.limitFlow)
                                 }}</el-col>
                             </el-row>
                         </div>
@@ -40,14 +40,15 @@
             </el-table>
             <div class="pagination-container">
                 <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20]" small
-                    background layout=" prev, pager, next, sizes" :total="dataTotal" />
+                    background layout=" prev, pager, next, sizes" :total="dataTotal" @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange" />
             </div>
         </el-card>
 
         <el-dialog v-model="dialogUpdateFormVisible" title="修改">
             <el-form :model="updateForm" style="max-width: 460px">
                 <el-form-item label="用户名" :label-width="'80px'">
-                    <el-input  v-model="updateForm.username" autocomplete="off" />
+                    <el-input v-model="updateForm.username" autocomplete="off" />
                 </el-form-item>
                 <el-form-item label="角色" :label-width="'80px'">
                     <el-select v-model="updateForm.roleName" placeholder="角色选择">
@@ -55,14 +56,15 @@
                         <el-option label="admin" value="admin" />
                     </el-select>
                 </el-form-item>
-                <el-form-item label="限制流量" :label-width="'80px'">
+                <el-form-item label="流量限额" :label-width="'80px'">
                     <el-input v-model="updateForm.limitFlow" autocomplete="off" />
                 </el-form-item>
                 <el-form-item label="流量状态" :label-width="'80px'">
                     <el-select v-model="updateForm.state" placeholder="状态选择">
                         <el-option v-for="state in stateData" :value="state.value">
                             <span style="float: left">{{ state.value }}</span>
-                            <span style="float: right;color: var(--el-text-color-secondary);font-size: 13px;">{{ state.des }}</span>
+                            <span style="float: right;color: var(--el-text-color-secondary);font-size: 13px;">{{ state.des
+                            }}</span>
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -74,7 +76,7 @@
                 </span>
             </template>
         </el-dialog>
-        
+
 
         <el-dialog v-model="dialogAddFormVisible" title="添加">
             <el-form :model="addForm" style="max-width: 460px">
@@ -93,18 +95,19 @@
                         <el-option label="admin" value="admin" />
                     </el-select>
                 </el-form-item>
-                <el-form-item label="限制流量" :label-width="'80px'">
+                <el-form-item label="流量限额" :label-width="'80px'">
                     <el-input v-model="addForm.limitFlow" autocomplete="off" />
                 </el-form-item>
                 <el-form-item label="流量状态" :label-width="'80px'">
                     <el-select v-model="addForm.state" placeholder="状态选择">
                         <el-option v-for="state in stateData" :value="state.value">
                             <span style="float: left">{{ state.value }}</span>
-                            <span style="float: right;color: var(--el-text-color-secondary);font-size: 13px;">{{ state.des }}</span>
+                            <span style="float: right;color: var(--el-text-color-secondary);font-size: 13px;">{{ state.des
+                            }}</span>
                         </el-option>
                     </el-select>
                 </el-form-item>
-                
+
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
@@ -126,16 +129,16 @@ const props = defineProps<{}>()
 
 const stateData = [
     {
-        value:1,
-        des:'可用'
+        value: 1,
+        des: '可用'
     },
     {
-        value:0,
-        des:'流量超标'
+        value: 0,
+        des: '流量超标'
     },
     {
-        value:-1,
-        des:'冻结'
+        value: -1,
+        des: '冻结'
     },
 ]
 
@@ -148,20 +151,20 @@ const dialogUpdateFormVisible = ref(false)
 const dialogAddFormVisible = ref(false)
 
 const updateForm = reactive({
-    id:'0',
+    id: '0',
     username: '',
     roleName: 'user',
-    limitFlow:0,
+    limitFlow: 0,
     state: 1
 })
 
 const addForm = reactive({
     roleName: 'user',
     username: '',
-    password:'',
-    email:'',
-    limitFlow:0,
-    state:1,
+    password: '',
+    email: '',
+    limitFlow: 0,
+    state: 1,
 })
 
 const updateButtonHandle = (row: any) => {
@@ -179,38 +182,40 @@ const addButtonHandle = (row: any) => {
 
 const updateFormHandle = () => {
     updateUserDetail(updateForm)
-    .then(res=>{
-        ElMessage.success('跟新成功')
-        dialogUpdateFormVisible.value = false
-    }).catch(err=>{
-        ElMessage.error('跟新失败')
-        dialogUpdateFormVisible.value = false
-    })
+        .then(res => {
+            ElMessage.success('跟新成功')
+            dialogUpdateFormVisible.value = false
+        }).catch(err => {
+            ElMessage.error('跟新失败')
+            dialogUpdateFormVisible.value = false
+        })
 }
 
-const addFormHandle = ()=>{
+const addFormHandle = () => {
     addUserDetail(addForm)
-    .then(res=>{
-        ElMessage.success('添加成功')
-        dialogAddFormVisible.value = false
-    }).catch(err=>{
-        ElMessage.error('添加失败')
-        dialogAddFormVisible.value = false
-    })
+        .then(res => {
+            ElMessage.success('添加成功')
+            dialogAddFormVisible.value = false
+        }).catch(err => {
+            ElMessage.error('添加失败')
+            dialogAddFormVisible.value = false
+        })
 }
 
+const handleSizeChange = (size: number) => {
+    refresh()
+}
 
-const refresh = ()=>{
-    getUserNum()
+const handleCurrentChange = (value: number) => {
+    refresh()
+}
+
+const refresh = () => {
+    getUserDetail({ pageNum: currentPage.value, pageSize: pageSize.value, })
         .then((res) => {
             const data = res.data
-            dataTotal.value = data.count
-        })
-
-    getUserDetail({ pageNum: 1, pageSize: 10, })
-        .then((res) => {  
-            const data = res.data
             tableData.value = data.records
+            dataTotal.value = data.total
         })
 }
 

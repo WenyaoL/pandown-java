@@ -30,7 +30,7 @@ public class PandownUserFlow implements Serializable {
     @ApiModelProperty(value = "解析流量")
     private Long parseFlow;
 
-    @ApiModelProperty(value = "流量限制")
+    @ApiModelProperty(value = "限额流量(剩余流量)")
     private Long limitFlow;
 
     @ApiModelProperty(value = "状态")

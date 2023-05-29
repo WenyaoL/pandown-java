@@ -58,13 +58,14 @@
     }
 
     .svg-icon {
-      margin-left: 1px;
       margin-right: 16px;
       min-width: 14px;
     }
 
     i.el-icon {
       justify-content: flex-start;
+      margin-left: -2px;
+      padding-bottom: 3px;
     }
 
     .sub-el-icon {
@@ -119,6 +120,11 @@
 
         .svg-icon {
           margin-left: 20px;
+        }
+
+        .el-icon {
+          margin-left: 18px;
+          padding-bottom: 1px;
         }
 
         .sub-el-icon {

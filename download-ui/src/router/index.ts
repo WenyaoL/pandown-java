@@ -5,7 +5,7 @@ import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 import Layout from '../layout/index.vue'
 import store from '@/store'
-import {Plus} from '@element-plus/icons-vue'
+import {Plus,Tickets} from '@element-plus/icons-vue'
 import {markRaw} from 'vue'
 
 export const constantRoutes = [
@@ -61,7 +61,20 @@ export const constantRoutes = [
     ]
   },
 
-  
+  {
+    path: '/history',
+    component: Layout,
+    redirect: '/history/parse',
+    name: 'History',
+    children: [
+      {
+        path: 'parse',
+        name: 'Parse',
+        component: () => import('@/views/history/index.vue'),
+        meta: { title: '历史记录',icon: markRaw(Tickets),isElementIcon:true }
+      }
+    ]
+  },
 ]
 
 

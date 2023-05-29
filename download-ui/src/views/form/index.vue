@@ -75,7 +75,6 @@ const showT = computed(() => {
 })
 
 const extractLink = () => {
-  console.log(form.link);
   const shareLink = form.link
   const linkPattern = /https:\/\/pan\.baidu\.com\/s\/([a-zA-Z0-9_-]+)/g
   const surlPattern = /(?<=https:\/\/pan\.baidu\.com\/s\/)[a-zA-Z0-9_-]+/g
@@ -158,6 +157,8 @@ watch(() => form.pwd, (val, oldVal) => {
 
 .copyIcon {
   margin-left: 10px;
+  color: #409EFF;
+  top: 2px;
 }
 
 .analysis-container {

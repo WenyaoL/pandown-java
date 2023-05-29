@@ -55,9 +55,8 @@ public class PandownUserFlowServiceImpl extends ServiceImpl<PandownUserFlowMappe
     }
 
     @Override
-    public boolean addUserFlow(Long id,Long flow) {
+    public boolean consumeUserFlow(Long id,Long flow) {
         PandownUserFlow userFlow = getById(id);
-        System.out.println(userFlow);
         if (Objects.isNull(userFlow)){
             if (flow>defaultLimitFlow) return false;
             PandownUserFlow pandownUserFlow = new PandownUserFlow();
@@ -72,13 +71,14 @@ public class PandownUserFlowServiceImpl extends ServiceImpl<PandownUserFlowMappe
 
         Long parseFlow = userFlow.getParseFlow();
         Integer parseNum = userFlow.getParseNum();
-        if(parseFlow + flow > userFlow.getLimitFlow()){
+        Long limitFlow = userFlow.getLimitFlow();
+        if(limitFlow - flow < 0){
             return false;
         }
 
         userFlow.setParseNum(parseNum+1);
         userFlow.setParseFlow(parseFlow + flow);
-
+        userFlow.setLimitFlow(limitFlow - flow);
         return updateById(userFlow);
     }
 
