@@ -99,7 +99,7 @@ onMounted(() => {
         <el-card class="box-card">
             <template #header>
                 <div class="card-header">
-                    <span>SVIP账号列表</span>
+                    <span>普通账号列表</span>
                     <el-button-group class="button-container">
                         <el-button type="primary" @click="dialogAddFormVisible = true">添加</el-button>
                         <el-button type="primary" @click="refresh">刷新</el-button>
