@@ -36,5 +36,6 @@ export function getAllSvipDlink(data:any){
 export default {
   getShareDir,
   getSignAndTime,
-  getSvipDlink
+  getSvipDlink,
+  getAllSvipDlink
 }

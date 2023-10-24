@@ -14,10 +14,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -49,12 +46,6 @@ public class DownloadApiController {
 
     @Autowired(required = false)
     private HttpServletResponse httpServletResponse;
-
-    @PostMapping("/list_all_files")
-    @ApiOperation(value = "分享链接解析接口", notes = "分享链接解析(返回分享数据)", httpMethod = "POST")
-    public BaseResponse listAllFiles(@RequestBody @Valid ListFileDTO listFileDTO) {
-        return new SuccessResponse(downloadService.listShare(listFileDTO.getSurl(), listFileDTO.getPwd()));
-    }
 
     @PostMapping("/list_dir")
     @ApiOperation(value = "分享目录解析接口", notes = "分享目录解析(列举指定目录)", httpMethod = "POST")
@@ -96,41 +87,33 @@ public class DownloadApiController {
 
     @PostMapping("/getSvipDlink")
     @ApiOperation(value = "直链请求接口", notes = "获取直链", httpMethod = "POST")
-    public BaseResponse getSvipdLink(@RequestBody @Valid GetSvipDlinkDTO getSvipDlinkDTO) {
-        String token = httpServletRequest.getHeader("token");
+    public BaseResponse getSvipdLink(
+            @RequestHeader String token,
+            @RequestBody @Valid GetSvipDlinkDTO getSvipDlinkDTO) {
         Map<String, Claim> claimMap = tokenService.parseToken(token);
         Long userId = Long.parseLong(claimMap.get(TokenService.LOGIN_USER_KEY).asString());
         //流量状态是否可用
         boolean available = pandownUserFlowService.isAvailable(userId);
         if (!available) return new FailResponse("流量不足,或者用户流量被冻结");
 
-        try {
-            List<ShareFileDTO> svipDlink = downloadService.getSvipDlink(getSvipDlinkDTO, userId);
-            return new SuccessResponse(svipDlink);
-        }catch (Exception e){
-            e.printStackTrace();
-            return new FailResponse("流量不足,或者用户流量被冻结");
-        }
-
+        List<ShareFileDTO> svipDlink = downloadService.getSvipDlink(getSvipDlinkDTO, userId);
+        return new SuccessResponse(svipDlink);
     }
 
     @PostMapping("/getAllSvipDlink")
     @ApiOperation(value = "直链请求接口", notes = "获取直链", httpMethod = "POST")
-    public BaseResponse getAllSvipdLink(@RequestBody ListAllSvipDlinkDTO listAllSvipDlinkDTO) {
-        String token = httpServletRequest.getHeader("token");
+    public BaseResponse getAllSvipdLink(@RequestHeader String token,
+                                        @RequestBody ListAllSvipDlinkDTO listAllSvipDlinkDTO) {
         Map<String, Claim> claimMap = tokenService.parseToken(token);
         Long userId = Long.parseLong(claimMap.get(TokenService.LOGIN_USER_KEY).asString());
         //流量状态是否可用
         boolean available = pandownUserFlowService.isAvailable(userId);
         if (!available) return new FailResponse("流量不足,或者用户流量被冻结");
 
-        try {
-            List<ShareFileDTO> allSvipdLink = downloadService.getAllSvipdLink(listAllSvipDlinkDTO,userId);
-            return new SuccessResponse(allSvipdLink);
-        }catch (Exception e){
-            e.printStackTrace();
-            return new FailResponse("流量不足,或者用户流量被冻结");
-        }
+
+        List<ShareFileDTO> allSvipdLink = downloadService.getAllSvipdLink(listAllSvipDlinkDTO,userId);
+        return new SuccessResponse(allSvipdLink);
+
 
     }
 

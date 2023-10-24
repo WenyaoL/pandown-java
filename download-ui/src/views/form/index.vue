@@ -113,11 +113,9 @@ const onSubmit = () => {
     store.commit('setPwd', pwd)
     getShareDir({ surl, pwd, dir: "" })
       .then(response => {
-        if (response.code == "200") {
-          const data = response.data
-          store.commit('setPandownData', data)
-          router.push({ name: 'BaiduDownload' })
-        }
+        const data = response.data
+        store.commit('setPandownData', data)
+        router.push({ name: 'BaiduDownload' })
       }).catch(error => {
         console.error('网络请求失败', error)
       })

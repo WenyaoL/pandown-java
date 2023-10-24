@@ -533,6 +533,9 @@ const downloadAllLinkTxt = () => {
 
 }
 
+/**
+ * 下载所选择的文件(按钮处理)
+ */
 const downloadSelectedHandle = () => {
   ElMessageBox.confirm(
     '是否解析选中的文件,包含文件夹?(消耗流量)',

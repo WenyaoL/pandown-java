@@ -156,6 +156,7 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
     @Override
     public List<DbtableCommonAccount> listAvailableAccount() {
         List<DbtableCommonAccount> accountList = query().eq("state", 1).list();
+        log.warn(accountList.toString());
         log.warn("accountList:{}",accountList.toString());
         return accountList;
     }
@@ -187,8 +188,10 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
         List<DbtableCommonAccount> list = listAvailableAccount();
 
         redisService.del(PANDOWN_COMMON_ACCOUNT_LIST,PANDOWN_COMMON_ACCOUNT_IDX);
-        redisService.lPush(PANDOWN_COMMON_ACCOUNT_LIST, list);
         redisService.set(PANDOWN_COMMON_ACCOUNT_IDX,0L);
+        if (list == null || list.size()==0) throw new RuntimeException("已无可用的百度云普通账号");
+        redisService.lPush(PANDOWN_COMMON_ACCOUNT_LIST, list);
+
         return update;
     }
 }

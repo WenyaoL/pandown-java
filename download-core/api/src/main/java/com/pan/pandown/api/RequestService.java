@@ -2,7 +2,9 @@ package com.pan.pandown.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pan.pandown.apiModel.BaiduApiErrorNo;
 import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2023-04-28
  */
 @Service
+@Slf4j
 public class RequestService {
 
     @Autowired
@@ -110,6 +113,12 @@ public class RequestService {
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Map> responseEntity = restTemplate.postForEntity(uri, httpEntity, Map.class);
+
+        //网络异常
+        if (!responseEntity.getStatusCode().is2xxSuccessful()){
+            throw new RuntimeException("请求网络异常:"+surl);
+        }
+
         return responseEntity;
     }
 
@@ -153,6 +162,11 @@ public class RequestService {
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(null, headers);
 
         ResponseEntity<Map> exchange = restTemplate.exchange(uri, HttpMethod.GET, httpEntity, Map.class);
+
+        //网络异常
+        if (!exchange.getStatusCode().is2xxSuccessful()){
+            throw new RuntimeException("请求网络异常:"+surl);
+        }
 
         return exchange;
     }
@@ -205,6 +219,11 @@ public class RequestService {
 
         ResponseEntity<Map> responseEntity = restTemplate.postForEntity(uri, httpEntity, Map.class);
 
+        //网络异常
+        if (!responseEntity.getStatusCode().is2xxSuccessful()){
+            throw new RuntimeException("请求网络异常:"+uri);
+        }
+
         return responseEntity;
     }
 
@@ -220,8 +239,9 @@ public class RequestService {
         headers.set("User-Agent", "LogStatistic");
         headers.put("Cookie", mapToCookieList(new HashMap<String, String>() {{ put("BDUSS", BDUSS); }}));
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(headers);
-        //head请求
+        //head请求(返回的响应是重定向响应,code:302)
         ResponseEntity<String> response = restTemplate.exchange(uri,HttpMethod.HEAD, httpEntity, String.class);
+
         return response;
     }
 
@@ -251,17 +271,12 @@ public class RequestService {
 
         ResponseEntity<Map> responseEntity = restTemplate.postForEntity(uri, httpEntity, Map.class);
 
-        if (responseEntity.getStatusCode().is2xxSuccessful()) return responseEntity;
+        //网络异常
+        if (!responseEntity.getStatusCode().is2xxSuccessful()){
+            throw new RuntimeException("请求网络异常:"+uri);
+        }
 
-        return null;
-    }
-
-    public void setCookies(Map<String, String> cookies) {
-        this.cookies = cookies;
-    }
-
-    public void addCookie(String key, String value) {
-        this.cookies.put(key, value);
+        return responseEntity;
     }
 
 
@@ -290,9 +305,5 @@ public class RequestService {
         return result;
     }
 
-
-    public boolean isSuccessResponse(ResponseEntity<Map> responseEntity){
-        return responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody().get("errno").toString().equals("0");
-    }
 
 }

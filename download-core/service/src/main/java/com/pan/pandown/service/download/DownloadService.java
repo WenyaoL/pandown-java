@@ -3,6 +3,7 @@ package com.pan.pandown.service.download;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pan.pandown.api.RequestService;
+import com.pan.pandown.apiModel.BaiduApiErrorNo;
 import com.pan.pandown.dao.entity.DbtableCommonAccount;
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.service.IDbtableCommonAccountService;
@@ -38,23 +39,7 @@ public class DownloadService {
     @Autowired
     private IPandownParseService pandownParseService;
 
-    /**
-     * 返回所有分享信息
-     * @param surl 分享surl
-     * @param pwd 分享验证码
-     * @return
-     */
-    public Map listShare(String surl,String pwd){
-        ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, "", 1);
-        Map data = (Map) responseEntity.getBody().get("data");
-        //链接有效检验
-        if(Objects.nonNull(data) && Objects.nonNull(data.get("list")) && ((List)data.get("list")).size()>0){
-            data.put("list",listFileTree(surl,pwd,"",new ArrayList()));
-            return data;
-        }
 
-        return null;
-    }
 
     /**
      *  以文件树列出文件夹下所有文件，包含文件夹下面的子文件夹
@@ -120,26 +105,12 @@ public class DownloadService {
         Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
 
         ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, dir, page,cookieMap.get("BDUSS"));
+        //检测响应
+        checkBaiduResponse(responseEntity,account);
 
-        //请求失败(请求失败)
-        if (!requestService.isSuccessResponse(responseEntity)){
-            //冻结
-            dbtableCommonAccountService.freezeCommonAccount(account.getId());
-            //再次获取
-            account = dbtableCommonAccountService.getNextCommonAccount();
-            cookieStr = account.getCookie();
-            cookieMap = requestService.strToCookieMap(cookieStr);
-            responseEntity = requestService.requestFileList(surl, pwd, dir, page,cookieMap.get("BDUSS"));
-
-            //还是失败(使用静态cookie)
-            if(!requestService.isSuccessResponse(responseEntity)) responseEntity = requestService.requestFileList(surl, pwd, dir, page);
-
-            //返回
-            return (Map) responseEntity.getBody().getOrDefault("data",null);
-        }
-
-
+        //返回
         return (Map) responseEntity.getBody().getOrDefault("data",null);
+
     }
 
 
@@ -147,32 +118,16 @@ public class DownloadService {
 
     public SignAndTimeDTO getSignAndTime(String surl){
         DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
+        if (account == null) throw new RuntimeException("已无可用的百度云普通账号");
         String cookieStr = account.getCookie();
         Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
-
         ResponseEntity<Map> responseEntity = requestService.requestSignAndTime(surl,cookieMap.get("BAIDUID"));
+
+        //检测响应
+        checkBaiduResponse(responseEntity,account);
 
         //mapper 转换
         ObjectMapper objectMapper = new ObjectMapper();
-
-        if (!requestService.isSuccessResponse(responseEntity)){
-            //冻结
-            dbtableCommonAccountService.freezeCommonAccount(account.getId());
-
-            //再次获取
-            account = dbtableCommonAccountService.getNextCommonAccount();
-            cookieStr = account.getCookie();
-            cookieMap = requestService.strToCookieMap(cookieStr);
-            responseEntity = requestService.requestSignAndTime(surl,cookieMap.get("BAIDUID"));
-
-            //还是失败,使用静态cookie重新请求一次
-            if (!requestService.isSuccessResponse(responseEntity)) responseEntity = requestService.requestSignAndTime(surl);
-
-            Object data = responseEntity.getBody().get("data");
-            SignAndTimeDTO signAndTimeDTO = objectMapper.convertValue(data, SignAndTimeDTO.class);
-            return signAndTimeDTO;
-        }
-
         Object data = responseEntity.getBody().get("data");
         SignAndTimeDTO signAndTimeDTO = objectMapper.convertValue(data, SignAndTimeDTO.class);
 
@@ -194,29 +149,8 @@ public class DownloadService {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        if (!requestService.isSuccessResponse(responseEntity)){
-            //冻结
-            dbtableCommonAccountService.freezeCommonAccount(account.getId());
-
-            //再次获取
-            account = dbtableCommonAccountService.getNextCommonAccount();
-            cookieStr = account.getCookie();
-            cookieMap = requestService.strToCookieMap(cookieStr);
-            responseEntity = requestService.requestDlink(getDlinkDTO,cookieMap);
-
-            //还是失败,使用静态cookie重新请求一次
-            if (!requestService.isSuccessResponse(responseEntity)) responseEntity = requestService.requestDlink(getDlinkDTO,cookieMap);
-
-            List<Object> list = (List<Object>)responseEntity.getBody().getOrDefault("list", null);
-
-            //转化
-            List<ShareFileDTO> collect = list.stream()
-                    .map(o -> objectMapper.convertValue(o, ShareFileDTO.class))
-                    .collect(Collectors.toList());
-
-            return collect;
-        }
-
+        //检测响应
+        checkBaiduResponse(responseEntity,account);
 
         List<Object> list = (List<Object>)responseEntity.getBody().getOrDefault("list", null);
         //转化
@@ -232,7 +166,7 @@ public class DownloadService {
      * @param shareFileDTO
      * @return
      */
-    public String getSvipDlink(ShareFileDTO shareFileDTO,Long id) throws Exception{
+    public String getSvipDlink(ShareFileDTO shareFileDTO,Long id){
 
         DbtableSvip nextSvip = dbtableSvipService.getNextSvip();
         ResponseEntity<String> responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
@@ -269,7 +203,7 @@ public class DownloadService {
      * @param id 解析用户的id
      * @return
      */
-    public List<ShareFileDTO> getSvipDlink(GetSvipDlinkDTO getSvipDlinkDTO,Long id) throws Exception {
+    public List<ShareFileDTO> getSvipDlink(GetSvipDlinkDTO getSvipDlinkDTO,Long id){
         String sign = getSvipDlinkDTO.getSign();
         Long timestamp = getSvipDlinkDTO.getTimestamp();
         String seckey = getSvipDlinkDTO.getSeckey();
@@ -315,7 +249,7 @@ public class DownloadService {
         return result;
     }
 
-    public List<ShareFileDTO> getAllSvipdLink(ListAllSvipDlinkDTO listAllSvipDlinkDTO,Long id) throws Exception {
+    public List<ShareFileDTO> getAllSvipdLink(ListAllSvipDlinkDTO listAllSvipDlinkDTO,Long id){
         String surl = listAllSvipDlinkDTO.getSurl();
         String pwd = listAllSvipDlinkDTO.getPwd();
         String seckey = listAllSvipDlinkDTO.getSeckey();
@@ -366,4 +300,55 @@ public class DownloadService {
 
         return result;
     }
+
+
+    /**
+     * 检测普通接口的响应
+     * @param responseEntity
+     * @param account
+     */
+    public void checkBaiduResponse(ResponseEntity<Map> responseEntity,DbtableCommonAccount account){
+        //获取状态消息
+        String errno = responseEntity.getBody().get("errno").toString();
+        BaiduApiErrorNo baiduApiError = BaiduApiErrorNo.toBaiduApiError(errno);
+
+
+        //账号问题 冻结
+        if (BaiduApiErrorNo.isAccountError(baiduApiError)) {
+            log.error("-------------------------------------------------------");
+            log.error("errno:"+errno);
+            log.error("-------------------------------------------------------");
+            dbtableCommonAccountService.freezeCommonAccount(account.getId());
+        }
+
+
+        //链接问题 抛异常
+        if (BaiduApiErrorNo.isLinkError(baiduApiError)) {
+            log.error("-------------------------------------------------------");
+            log.error("errno:"+errno);
+            log.error("-------------------------------------------------------");
+            throw new RuntimeException(baiduApiError.getMsg());
+        }
+    }
+
+    /**
+     * 检测svip接口的响应
+     * @param responseEntity
+     * @param account
+     */
+    public void checkBaiduSvipResponse(ResponseEntity<Map> responseEntity,DbtableSvip account){
+        //获取状态消息
+        String errno = responseEntity.getBody().get("errno").toString();
+        BaiduApiErrorNo baiduApiError = BaiduApiErrorNo.toBaiduApiError(errno);
+
+        //账号问题 冻结
+        if (BaiduApiErrorNo.isAccountError(baiduApiError)) dbtableSvipService.freezeSvip(account.getId());
+
+        //链接问题 抛异常
+        if (BaiduApiErrorNo.isLinkError(baiduApiError)) {
+            throw new RuntimeException(baiduApiError.getMsg());
+        }
+
+    }
+
 }
