@@ -133,6 +133,7 @@ onMounted(() => {
 
         
         <el-dialog v-model="dialogFormVisible" title="添加">
+            <p>添加提升bduss和stoken只需要后面的值即可,如(BDUSS=XXX;STOKEN=XXX;)只需获取XXX</p>
             <el-form :model="form">
                 <el-form-item label="bduss" :label-width="'60px'">
                     <el-input v-model="form.bduss" autocomplete="off" />
