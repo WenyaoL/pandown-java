@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @Data
 public class GetSvipDlinkDTO {
-    private List<ShareFileDTO> shareFileList;
+    private ShareFileDTO shareFile;
 
     private String sign;
 

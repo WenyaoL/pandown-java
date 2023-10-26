@@ -71,10 +71,10 @@ public class DownloadApiTest {
         downloadApiDTO.setTimestamp(Long.parseLong(timestamp.toString()));
         downloadApiDTO.setSign(sign.toString());
         downloadApiDTO.setSeckey("FjsaDdahS3NCh18koEgh9uB1XztK9yUr4f9nt6ydoLE~");
-        ResponseEntity<Map> responseEntity = requestService.requestDlink(downloadApiDTO);
-        System.out.println(responseEntity);
-        List dlink = (List)downloadService.getDlink(downloadApiDTO);
-        Map o = (Map) dlink.get(0);
+        //ResponseEntity<Map> responseEntity = requestService.requestDlink(downloadApiDTO);
+        //System.out.println(responseEntity);
+        //List dlink = (List)downloadService.getDlink(downloadApiDTO);
+        //Map o = (Map) dlink.get(0);
         //Object dlink1 = downloadService.getSvipDlink(dlink);
         // Object dlink1 = downloadService.getSvipDlink(o.get("dlink").toString());
         //System.out.println(dlink1);

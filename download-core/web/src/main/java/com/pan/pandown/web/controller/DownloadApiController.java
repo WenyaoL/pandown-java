@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -96,7 +96,7 @@ public class DownloadApiController {
         boolean available = pandownUserFlowService.isAvailable(userId);
         if (!available) return new FailResponse("流量不足,或者用户流量被冻结");
 
-        List<ShareFileDTO> svipDlink = downloadService.getSvipDlink(getSvipDlinkDTO, userId);
+        ShareFileDTO svipDlink = downloadService.getSvipDlink(getSvipDlinkDTO, userId);
         return new SuccessResponse(svipDlink);
     }
 

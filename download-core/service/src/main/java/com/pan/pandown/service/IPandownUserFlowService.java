@@ -31,6 +31,8 @@ public interface IPandownUserFlowService extends IService<PandownUserFlow> {
 
     /**
      * 消耗用户流量
+     * 消耗成功返回true
+     * 消耗失败返回false
      * @param id
      * @param flow
      * @return
@@ -42,5 +44,6 @@ public interface IPandownUserFlowService extends IService<PandownUserFlow> {
      * @return
      */
     boolean isAvailable(Long id);
+
 
 }

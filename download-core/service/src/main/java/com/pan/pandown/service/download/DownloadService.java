@@ -3,7 +3,7 @@ package com.pan.pandown.service.download;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pan.pandown.api.RequestService;
-import com.pan.pandown.apiModel.BaiduApiErrorNo;
+import com.pan.pandown.api.model.BaiduApiErrorNo;
 import com.pan.pandown.dao.entity.DbtableCommonAccount;
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.service.IDbtableCommonAccountService;
@@ -101,10 +101,10 @@ public class DownloadService {
     public Map listDir(String surl,String pwd,String dir,Integer page){
 
         DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
-        String cookieStr = account.getCookie();
-        Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
-
-        ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, dir, page,cookieMap.get("BDUSS"));
+        //检测账号cookie
+        Map<String, String> cookie = checkBaiduAccountCookie(account);
+        //请求解析目录
+        ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, dir, page,cookie.get("BDUSS"));
         //检测响应
         checkBaiduResponse(responseEntity,account);
 
@@ -119,10 +119,10 @@ public class DownloadService {
     public SignAndTimeDTO getSignAndTime(String surl){
         DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
         if (account == null) throw new RuntimeException("已无可用的百度云普通账号");
-        String cookieStr = account.getCookie();
-        Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
-        ResponseEntity<Map> responseEntity = requestService.requestSignAndTime(surl,cookieMap.get("BAIDUID"));
-
+        //check account cookie
+        Map<String, String> cookie = checkBaiduAccountCookie(account);
+        //request sign and time
+        ResponseEntity<Map> responseEntity = requestService.requestSignAndTime(surl,cookie.get("BAIDUID"));
         //检测响应
         checkBaiduResponse(responseEntity,account);
 
@@ -141,16 +141,16 @@ public class DownloadService {
      */
     public List<ShareFileDTO> getDlink(GetDlinkDTO getDlinkDTO){
         DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
-        String cookieStr = account.getCookie();
-        Map<String, String> cookieMap = requestService.strToCookieMap(cookieStr);
-        ResponseEntity<Map> responseEntity = requestService.requestDlink(getDlinkDTO,cookieMap);
+        //check account cookie
+        checkBaiduAccountCookie(account);
+        //request
+        ResponseEntity<Map> responseEntity = requestService.requestDlink(getDlinkDTO,account.getCookie());
+        //检测响应
+        checkBaiduResponse(responseEntity,account);
 
         //json转Java对象
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        //检测响应
-        checkBaiduResponse(responseEntity,account);
 
         List<Object> list = (List<Object>)responseEntity.getBody().getOrDefault("list", null);
         //转化
@@ -166,31 +166,17 @@ public class DownloadService {
      * @param shareFileDTO
      * @return
      */
-    public String getSvipDlink(ShareFileDTO shareFileDTO,Long id){
+    public String fetchSvipDlink(ShareFileDTO shareFileDTO,Long id){
+        //消耗流量
+        boolean b = pandownUserFlowService.consumeUserFlow(id, shareFileDTO.getSize());
+        if (!b) throw new RuntimeException("流量不足");
 
         DbtableSvip nextSvip = dbtableSvipService.getNextSvip();
         ResponseEntity<String> responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
 
+        checkBaiduSvipResponse(responseEntity,nextSvip);
+
         List<String> location = responseEntity.getHeaders().get("Location");
-
-        if (Objects.isNull(location) && location.size()==0){
-            //冻结
-            dbtableSvipService.freezeSvip(nextSvip.getId());
-
-            //再次获取
-            nextSvip = dbtableSvipService.getNextSvip();
-            responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
-            location = responseEntity.getHeaders().get("Location");
-
-            //不存在
-            if (Objects.isNull(location) && location.size()==0) return null;
-        }
-
-        //添加流量
-        boolean b = pandownUserFlowService.consumeUserFlow(id, shareFileDTO.getSize());
-
-        if (!b) throw new RuntimeException("流量不足");
-
         String link = location.get(0);
         shareFileDTO.setSvipDlink(link);
         pandownParseService.saveByShareFileDTO(shareFileDTO,id,nextSvip.getId());
@@ -203,50 +189,37 @@ public class DownloadService {
      * @param id 解析用户的id
      * @return
      */
-    public List<ShareFileDTO> getSvipDlink(GetSvipDlinkDTO getSvipDlinkDTO,Long id){
+    public ShareFileDTO getSvipDlink(GetSvipDlinkDTO getSvipDlinkDTO,Long id){
         String sign = getSvipDlinkDTO.getSign();
         Long timestamp = getSvipDlinkDTO.getTimestamp();
         String seckey = getSvipDlinkDTO.getSeckey();
         String shareid = getSvipDlinkDTO.getShareid();
         String uk = getSvipDlinkDTO.getUk();
-        List<ShareFileDTO> shareFileList = getSvipDlinkDTO.getShareFileList();
 
+        ShareFileDTO shareFile = getSvipDlinkDTO.getShareFile();
+        //如果普通连接为空，去提取
+        if (StringUtils.isBlank(shareFile.getDlink())){
+            ArrayList fileIdList = new ArrayList();
+            fileIdList.add(shareFile.getFs_id());
+            GetDlinkDTO getDlinkDTO = new GetDlinkDTO();
+            getDlinkDTO.setFsIdList(fileIdList);
+            getDlinkDTO.setUk(uk);
+            getDlinkDTO.setSeckey(seckey);
+            getDlinkDTO.setSign(sign);
+            getDlinkDTO.setTimestamp(timestamp);
+            getDlinkDTO.setShareid(shareid);
 
-        List result = new ArrayList();
-        for (int i = 0; i < shareFileList.size(); i++) {
-            ShareFileDTO shareFileDTO = shareFileList.get(i);
-
-            String dlink = shareFileDTO.getDlink();
-            //如果普通连接为空，去提取
-            if (StringUtils.isBlank(dlink)){
-                ArrayList fileIdList = new ArrayList();
-                fileIdList.add(shareFileDTO.getFs_id());
-                GetDlinkDTO getDlinkDTO = new GetDlinkDTO();
-                getDlinkDTO.setFsIdList(fileIdList);
-                getDlinkDTO.setUk(uk);
-                getDlinkDTO.setSeckey(seckey);
-                getDlinkDTO.setSign(sign);
-                getDlinkDTO.setTimestamp(timestamp);
-                getDlinkDTO.setShareid(shareid);
-                //获取普通连接
-                List<ShareFileDTO> shareFileDTOList = getDlink(getDlinkDTO);
-
-                if (Objects.nonNull(shareFileDTOList) && shareFileDTOList.size()>0){
-                    shareFileDTO = shareFileDTOList.get(0);
-                }
-            }
-
-            //获取SVIP连接
-
-            String link = this.getSvipDlink(shareFileDTO,id);
-            if (StringUtils.isBlank(link)) continue;
-            //填充SvipDlink字段
-            shareFileDTO.setSvipDlink(link);
-
-
-            result.add(shareFileDTO);
+            //获取普通连接
+            List<ShareFileDTO> shareFileDTOList = getDlink(getDlinkDTO);
+            shareFile = shareFileDTOList.get(0);
         }
-        return result;
+
+        //获取SVIP连接
+        String link = fetchSvipDlink(shareFile,id);
+        //填充SvipDlink字段
+        shareFile.setSvipDlink(link);
+
+        return shareFile;
     }
 
     public List<ShareFileDTO> getAllSvipdLink(ListAllSvipDlinkDTO listAllSvipDlinkDTO,Long id){
@@ -293,7 +266,7 @@ public class DownloadService {
         //用dlink换svipDlink
         for (int i = 0; i < list.size(); i++) {
             ShareFileDTO shareFileDTO = list.get(i);
-            String link = getSvipDlink(shareFileDTO,id);
+            String link = fetchSvipDlink(shareFileDTO,id);
             shareFileDTO.setSvipDlink(link);
             result.add(shareFileDTO);
         }
@@ -315,20 +288,20 @@ public class DownloadService {
 
         //账号问题 冻结
         if (BaiduApiErrorNo.isAccountError(baiduApiError)) {
-            log.error("-------------------------------------------------------");
-            log.error("errno:"+errno);
-            log.error("-------------------------------------------------------");
             dbtableCommonAccountService.freezeCommonAccount(account.getId());
         }
 
 
         //链接问题 抛异常
         if (BaiduApiErrorNo.isLinkError(baiduApiError)) {
-            log.error("-------------------------------------------------------");
-            log.error("errno:"+errno);
-            log.error("-------------------------------------------------------");
             throw new RuntimeException(baiduApiError.getMsg());
         }
+
+        //未知错误 抛异常
+        if (BaiduApiErrorNo.isUnknownError(baiduApiError)){
+            throw new RuntimeException(baiduApiError.getMsg() + errno);
+        }
+
     }
 
     /**
@@ -336,19 +309,40 @@ public class DownloadService {
      * @param responseEntity
      * @param account
      */
-    public void checkBaiduSvipResponse(ResponseEntity<Map> responseEntity,DbtableSvip account){
-        //获取状态消息
-        String errno = responseEntity.getBody().get("errno").toString();
-        BaiduApiErrorNo baiduApiError = BaiduApiErrorNo.toBaiduApiError(errno);
+    public void checkBaiduSvipResponse(ResponseEntity<String> responseEntity,DbtableSvip account) throws RuntimeException{
 
-        //账号问题 冻结
-        if (BaiduApiErrorNo.isAccountError(baiduApiError)) dbtableSvipService.freezeSvip(account.getId());
+        List<String> location = responseEntity.getHeaders().get("Location");
 
-        //链接问题 抛异常
-        if (BaiduApiErrorNo.isLinkError(baiduApiError)) {
-            throw new RuntimeException(baiduApiError.getMsg());
+        if (Objects.isNull(location) && location.size()==0) throw new RuntimeException("SVIP链接抓取失败");
+
+    }
+
+
+    public void checkBaiduAccount(DbtableCommonAccount account){
+        Map<String, String> cookie = checkBaiduAccountCookie(account);
+        ResponseEntity<Map> responseEntity = requestService.requestAccountState(cookie.get("BDUSS"), cookie.get("STOKEN"));
+        Map body = responseEntity.getBody();
+
+    }
+
+    public Map<String, String> checkBaiduAccountCookie(DbtableCommonAccount account){
+        String cookie = account.getCookie();
+        Map<String, String> cookieMap = requestService.strToCookieMap(cookie);
+
+        String bduss = cookieMap.get("BDUSS");
+        if (StringUtils.isBlank(bduss)) throw new RuntimeException("账号:"+account.getId()+"cookie异常,缺失BDUSS");
+
+        String stoken = cookieMap.get("STOKEN");
+        if (StringUtils.isBlank(stoken)) throw new RuntimeException("账号:"+account.getId()+"cookie异常,缺失STOKEN");
+
+        String baiduid = cookieMap.get("BAIDUID");
+        if (StringUtils.isBlank(baiduid)) {
+            log.error(cookieMap.toString());
+            throw new RuntimeException("账号:"+account.getId()+"cookie异常,缺失BAIDUID");
         }
 
+
+        return cookieMap;
     }
 
 }

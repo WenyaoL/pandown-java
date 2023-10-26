@@ -369,19 +369,18 @@ const downloadFile = async (row: ShareFile) => {
   const { sign, timestamp } = signAndTime
 
   const form = {
-    shareFileList: [row],
+    shareFile: row,
     timestamp,
     sign,
     seckey,
     shareid,
     uk
   }
-  const svipDlinkList = await fetchSvipDlink(form)
-  console.log(svipDlinkList);
+  const svipDlinkObj= await fetchSvipDlink(form)
+  console.log(svipDlinkObj);
 
-  if (!svipDlinkList || svipDlinkList.length == 0) return
-
-  row.svipDlink = svipDlinkList[0].svipDlink
+  if (!svipDlinkObj) return
+  row.svipDlink = svipDlinkObj.svipDlink
   currDownloadList.value = [row]
   downloadDialogVisible.value = true
   return

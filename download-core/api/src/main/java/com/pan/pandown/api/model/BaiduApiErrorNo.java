@@ -1,10 +1,12 @@
-package com.pan.pandown.apiModel;
+package com.pan.pandown.api.model;
 
 
 /**
  * BAIDU API 的错误消息枚举类
  */
 public enum BaiduApiErrorNo {
+
+    NOT_KNOWN_ERROR(Integer.MAX_VALUE,"未知错误:"),
 
     ERROR_ACCOUNT_COOKIE(9019,"账号cookie信息失效"),
     ERROR_ACCOUNT_NOLOGIN(-6,"请检查云盘普通账号是否正常登录"),
@@ -18,8 +20,9 @@ public enum BaiduApiErrorNo {
     SUCCESS(0,"success");
 
 
-    private final int code;
-    private final String msg;
+
+    private int code;
+    private String msg;
 
     BaiduApiErrorNo(int code,String msg){
         this.code = code;
@@ -34,6 +37,11 @@ public enum BaiduApiErrorNo {
         return msg;
     }
 
+    /**
+     * 属于账号问题，如账号被限速，账号未登录等
+     * @param baiduApiErrorNo
+     * @return
+     */
     public static boolean isAccountError(BaiduApiErrorNo baiduApiErrorNo){
 
         switch (baiduApiErrorNo){
@@ -63,7 +71,9 @@ public enum BaiduApiErrorNo {
 
     }
 
-
+    public static boolean isUnknownError(BaiduApiErrorNo baiduApiErrorNo){
+        return BaiduApiErrorNo.NOT_KNOWN_ERROR.equals(baiduApiErrorNo);
+    }
 
     public static boolean isSuccess(BaiduApiErrorNo baiduApiErrorNo){
 
@@ -87,7 +97,7 @@ public enum BaiduApiErrorNo {
             case 8001: return BaiduApiErrorNo.ERROR_ACCOUNT_D_Available;
             case 9013: return BaiduApiErrorNo.ERROR_ACCOUNT_NOT_Available;
             case 9019: return BaiduApiErrorNo.ERROR_ACCOUNT_COOKIE;
-            default: return null;
+            default: return BaiduApiErrorNo.NOT_KNOWN_ERROR;
         }
     }
 }
