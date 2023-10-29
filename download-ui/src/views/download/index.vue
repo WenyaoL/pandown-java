@@ -180,7 +180,7 @@ import { simpleInstance } from '@/api/request'
 import path from 'path-browserify'
 import { InfoFilled } from '@element-plus/icons-vue'
 import { getSvgByName } from '@/components/StaticIcon/svgData'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 interface ShareFile {
   fs_id: any,
@@ -421,9 +421,13 @@ const aria2Download = async (downloadUrl: string, path: string, server_filename:
         ]
       })
     })
+    if( response.status == 200){
+      ElMessage.success('发送成功')
+    }
     const data = await response.json()
     console.log('Aria2 下载结果：', data)
   } catch (error) {
+    ElMessage.error('发送失败')
     console.error('Aria2 下载出错：', error)
   }
 

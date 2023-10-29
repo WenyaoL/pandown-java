@@ -1,4 +1,4 @@
-package com.pan.pandown.dao.model;
+package com.pan.pandown.dao.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pan.pandown.dao.entity.PandownUser;

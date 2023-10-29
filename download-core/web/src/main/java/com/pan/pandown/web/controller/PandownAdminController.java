@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pan.pandown.service.IPandownAdminService;
 import com.pan.pandown.service.IPandownUserService;
 import com.pan.pandown.util.DTO.pandownAdminApi.AddUserDetailDTO;
+import com.pan.pandown.util.DTO.pandownAdminApi.DeleteUserDetailDTO;
 import com.pan.pandown.util.DTO.pandownAdminApi.UpdateUserDetailDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
@@ -27,7 +28,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/pandownAdmin")
+@RequestMapping("/api/admin")
 public class PandownAdminController {
 
     @Autowired
@@ -76,4 +77,13 @@ public class PandownAdminController {
         if (b) return new SuccessResponse();
         return new FailResponse();
     }
+
+    @PostMapping("/deleteUserDetail")
+    @ApiOperation(value = "删除用户详情接口",notes = "删除用户",httpMethod = "POST")
+    public BaseResponse deleteUserDetail(@RequestBody DeleteUserDetailDTO deleteUserDetailDTO){
+        boolean b = pandownAdminService.deleteUserDetail(deleteUserDetailDTO);
+        if (b) return new SuccessResponse();
+        return new FailResponse();
+    }
+
 }

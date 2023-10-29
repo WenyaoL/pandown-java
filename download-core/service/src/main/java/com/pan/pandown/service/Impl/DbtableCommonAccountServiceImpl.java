@@ -6,9 +6,11 @@ import com.pan.pandown.dao.entity.DbtableCommonAccount;
 import com.pan.pandown.dao.mapper.DbtableCommonAccountMapper;
 import com.pan.pandown.service.IDbtableCommonAccountService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pan.pandown.util.DTO.dbtableCommonAccountApi.CommonAccountNumDTO;
+import com.pan.pandown.service.download.CheckHelper;
+import com.pan.pandown.util.CookieUtils;
+import com.pan.pandown.util.DTO.pandownCommonAccountApi.CommonAccountNumDTO;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
-import com.pan.pandown.util.redis.RedisService;
+import com.pan.pandown.service.common.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,9 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
     @Resource
     private SnowflakeGenerator snowflakeGenerator;
 
+    @Autowired
+    private CheckHelper checkHelper;
+
     private final String PANDOWN_COMMON_ACCOUNT_IDX = "Pandown_common_account:for_idx";
     private final String PANDOWN_COMMON_ACCOUNT_LIST = "Pandown_common_account:account_list";
 
@@ -62,89 +66,78 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
     }
 
     @Override
-    public boolean deleteAccountDetail(DbtableCommonAccount dbtableCommonAccount) {
+    public boolean deleteAccountDetail(Long id,String name) {
         QueryWrapper<DbtableCommonAccount> queryWrapper = new QueryWrapper<DbtableCommonAccount>()
-                .eq("id", dbtableCommonAccount.getId())
-                .eq("name", dbtableCommonAccount.getName());
+                .eq("id", id)
+                .eq("name", name);
         return remove(queryWrapper);
     }
 
     @Override
-    public boolean updateAccountDetail(DbtableCommonAccount dbtableCommonAccount) {
+    public boolean updateAccountDetail(Long id,String name,String cookie) {
         //提取cookie
-        Map<String, String> cookieMap = requestService.strToCookieMap(dbtableCommonAccount.getCookie());
+        Map<String, String> cookieMap = CookieUtils.strToCookieMap(cookie);
         String bduss = cookieMap.get("BDUSS");
         String stoken = cookieMap.get("STOKEN");
 
         //查询账号状态
         ResponseEntity<Map> responseEntity = requestService.requestAccountState(bduss, stoken);
 
-        if (!responseEntity.getStatusCode().is2xxSuccessful()){
-            return false;
-        }
+        if (!checkHelper.isSuccessBaiduResponse(responseEntity)) throw new RuntimeException("跟新账号异常");
 
-        Object oResult = responseEntity.getBody().get("result");
 
-        if (oResult instanceof Map){
-            Map result = (Map) oResult;
-            String username = result.get("username").toString();
-            String loginstate = result.get("loginstate").toString();
 
-            //判断登录状态，未登录不给予通过
-            if (loginstate.equals("0")) return false;
+        Map result = (Map) responseEntity.getBody().get("result");
 
-            boolean update = update()
-                    .set("cookie", dbtableCommonAccount.getCookie())
-                    .eq("id", dbtableCommonAccount.getId())
-                    .eq("name", dbtableCommonAccount.getName())
-                    .update();
+        String username = result.get("username").toString();
+        String loginstate = result.get("loginstate").toString();
 
-            return update;
-        }
+        //判断登录状态，未登录不给予通过
+        if (loginstate.equals("0")) return false;
 
-        return false;
+        boolean update = update()
+                .set("cookie", cookie)
+                .eq("id", id)
+                .eq("name", name)
+                .update();
+
+        return update;
+
     }
 
     @Override
-    public DbtableCommonAccount addAccountDetail(DbtableCommonAccount dbtableCommonAccount) {
+    public DbtableCommonAccount addAccountDetail(String cookie) {
         //提取cookie
-        Map<String, String> cookieMap = requestService.strToCookieMap(dbtableCommonAccount.getCookie());
+        Map<String, String> cookieMap = CookieUtils.strToCookieMap(cookie);
         String bduss = cookieMap.get("BDUSS");
         String stoken = cookieMap.get("STOKEN");
 
         //查询账号状态
         ResponseEntity<Map> responseEntity = requestService.requestAccountState(bduss, stoken);
+        if (!checkHelper.isSuccessBaiduResponse(responseEntity)) throw new RuntimeException("添加失败，账号异常");
+        Map result = (Map) responseEntity.getBody().get("result");
 
-        if (!responseEntity.getStatusCode().is2xxSuccessful()){
-            return null;
-        }
+        String username = result.get("username").toString();
+        String loginstate = result.get("loginstate").toString();
 
-        Object oResult = responseEntity.getBody().get("result");
+        //判断登录状态，未登录不给予通过
+        if (loginstate.equals("0")) return null;
 
-        if (oResult instanceof Map){
-            Map result = (Map) oResult;
-            String username = result.get("username").toString();
-            String loginstate = result.get("loginstate").toString();
+        //生成雪花
+        long nextId = snowflakeGenerator.nextId();
 
-            //判断登录状态，未登录不给予通过
-            if (loginstate.equals("0")) return null;
+        //注入信息
+        DbtableCommonAccount dbtableCommonAccount = new DbtableCommonAccount();
+        dbtableCommonAccount.setId(nextId);
+        dbtableCommonAccount.setName(username);
+        dbtableCommonAccount.setCookie(cookie);
+        dbtableCommonAccount.setCreateTime(LocalDateTime.now());
+        dbtableCommonAccount.setUpdateTime(LocalDateTime.now());
+        dbtableCommonAccount.setState(1);
 
-            //生成雪花
-            long nextId = snowflakeGenerator.nextId();
-
-            //注入信息
-            dbtableCommonAccount.setId(nextId);
-            dbtableCommonAccount.setName(username);
-            dbtableCommonAccount.setCreateTime(LocalDateTime.now());
-            dbtableCommonAccount.setUpdateTime(LocalDateTime.now());
-            dbtableCommonAccount.setState(1);
-
-            boolean save = save(dbtableCommonAccount);
-            if (save) return dbtableCommonAccount;
-        }
-
-
-        return null;
+        boolean save = save(dbtableCommonAccount);
+        if (!save) throw new RuntimeException("添加失败");
+        return dbtableCommonAccount;
     }
 
     @Override
@@ -157,7 +150,7 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
     public List<DbtableCommonAccount> listAvailableAccount() {
         List<DbtableCommonAccount> accountList = query().eq("state", 1).list();
         log.warn(accountList.toString());
-        log.warn("accountList:{}",accountList.toString());
+        log.warn("accountList:{}",accountList);
         return accountList;
     }
 

@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RestControllerAdvice
 @Slf4j
-public class ExceptionResponse {
+public class ExceptionResponseHandler {
 
     /**
      * 处理其他异常

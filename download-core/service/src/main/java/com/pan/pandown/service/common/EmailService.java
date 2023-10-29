@@ -1,18 +1,13 @@
-package com.pan.pandown.service.login;
+package com.pan.pandown.service.common;
 
-import com.pan.pandown.util.DTO.ToEmail;
-import com.pan.pandown.util.redis.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import java.util.Objects;
 import java.util.Random;
 
 /**

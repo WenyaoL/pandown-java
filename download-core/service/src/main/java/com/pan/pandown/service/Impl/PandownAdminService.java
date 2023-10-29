@@ -9,6 +9,7 @@ import com.pan.pandown.dao.entity.PandownUserFlow;
 import com.pan.pandown.dao.entity.PandownUserRole;
 import com.pan.pandown.service.*;
 import com.pan.pandown.util.DTO.pandownAdminApi.AddUserDetailDTO;
+import com.pan.pandown.util.DTO.pandownAdminApi.DeleteUserDetailDTO;
 import com.pan.pandown.util.DTO.pandownAdminApi.UpdateUserDetailDTO;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -133,6 +134,16 @@ public class PandownAdminService implements IPandownAdminService {
         pandownUserRole.setCreateTime(LocalDateTime.now());
         pandownUserRoleService.save(pandownUserRole);
 
+        return true;
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteUserDetail(DeleteUserDetailDTO deleteUserDetailDTO) {
+        if (!pandownUserService.removeById(deleteUserDetailDTO.getId())) throw new RuntimeException("删除失败");
+        if (!pandownUserRoleService.removeById(deleteUserDetailDTO.getId())) throw new RuntimeException("删除失败");
+        if (!pandownUserFlowService.removeById(deleteUserDetailDTO.getId())) throw new RuntimeException("删除失败");
         return true;
     }
 }

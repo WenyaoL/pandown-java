@@ -58,7 +58,7 @@ export function resetPassword(data:any){
 
 export function getUserDetail(data:any){
   return request({
-    url: 'api/pandownAdmin/getUserInfoByPage',
+    url: '/api/admin/getUserInfoByPage',
     method: 'post',
     data
   })
@@ -66,7 +66,7 @@ export function getUserDetail(data:any){
 
 export function getUserNum(data?:any){
   return request({
-    url: 'api/pandownAdmin/getUserNum',
+    url: '/api/admin/getUserNum',
     method: 'post',
     data
   })
@@ -74,7 +74,7 @@ export function getUserNum(data?:any){
 
 export function updateUserDetail(data:any){
   return request({
-    url: 'api/pandownAdmin/updateUserDetail',
+    url: '/api/admin/updateUserDetail',
     method: 'post',
     data
   })
@@ -82,7 +82,15 @@ export function updateUserDetail(data:any){
 
 export function addUserDetail(data:any){
   return request({
-    url: 'api/pandownAdmin/addUserDetail',
+    url: '/api/admin/addUserDetail',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteUserDetail(data:any){
+  return request({
+    url: '/api/admin/deleteUserDetail',
     method: 'post',
     data
   })
@@ -98,5 +106,6 @@ export default {
   resetPassword,
   getUserDetail,
   getUserNum,
-  updateUserDetail
+  updateUserDetail,
+  deleteUserDetail
 }

@@ -2,7 +2,7 @@ import request from './request'
 
 export function getShareDir(data:any){
   return request({
-    url: 'api/download/list_dir',
+    url: 'api/download/listDir',
     method: 'post',
     data
   })

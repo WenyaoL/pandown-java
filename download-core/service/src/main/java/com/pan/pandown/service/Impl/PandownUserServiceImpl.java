@@ -5,21 +5,20 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pan.pandown.dao.entity.PandownUser;
-import com.pan.pandown.dao.entity.PandownUserRole;
 import com.pan.pandown.dao.mapper.PandownUserMapper;
-import com.pan.pandown.dao.model.LoginUser;
+import com.pan.pandown.dao.entity.LoginUser;
 import com.pan.pandown.service.IPandownUserFlowService;
 import com.pan.pandown.service.IPandownUserRoleService;
 import com.pan.pandown.service.IPandownUserService;
-import com.pan.pandown.service.login.EmailService;
-import com.pan.pandown.service.login.TokenService;
+import com.pan.pandown.service.common.EmailService;
+import com.pan.pandown.service.common.TokenService;
 import com.pan.pandown.util.DTO.SpringGrantedAuthority;
 import com.pan.pandown.util.DTO.pandownUserApi.UserRegisterDTO;
 import com.pan.pandown.util.PO.PandownUserDetailPO;
 import com.pan.pandown.util.PO.pandownUserApi.UserInfoPO;
 import com.pan.pandown.util.constants.RegisterCode;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
-import com.pan.pandown.util.redis.RedisService;
+import com.pan.pandown.service.common.RedisService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,10 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**

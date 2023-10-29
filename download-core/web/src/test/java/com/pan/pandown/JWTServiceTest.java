@@ -1,6 +1,6 @@
 package com.pan.pandown;
 
-import com.pan.pandown.util.security.JWTService;
+import com.pan.pandown.service.common.JWTService;
 import com.pan.pandown.web.PandownApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -86,7 +86,7 @@ export const asyncRoutes = [
     path: '/setting',
     component: Layout,
     redirect: '/setting/accountSetting',
-    meta: { title: '管理', icon: 'setting',roles: ['admin'] },
+    meta: { title: '账号管理', icon: 'setting',roles: ['admin'] },
     children: [
       {
         path:'accountSetting',
@@ -96,12 +96,12 @@ export const asyncRoutes = [
       {
         path:'svipAccountManage',
         component: () => import('@/views/setting/SvipAccountManagePage.vue'),
-        meta: { title: 'SVip管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
+        meta: { title: '网盘SVip管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
       },
       {
         path:'commonAccountManage',
         component: () => import('@/views/setting/CommonAccountManagePage.vue'),
-        meta: { title: '普通账号管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
+        meta: { title: '网盘普通账号管理', icon: markRaw(Plus),isElementIcon:true,roles: ['admin'] }
       },
       {
         path:'userManage',

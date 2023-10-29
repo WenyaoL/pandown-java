@@ -1,8 +1,8 @@
 package com.pan.pandown;
 
 import com.pan.pandown.dao.entity.PandownUser;
-import com.pan.pandown.dao.model.LoginUser;
-import com.pan.pandown.util.redis.RedisService;
+import com.pan.pandown.dao.entity.LoginUser;
+import com.pan.pandown.service.common.RedisService;
 import com.pan.pandown.web.PandownApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

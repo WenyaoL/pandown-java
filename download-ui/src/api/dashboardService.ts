@@ -2,7 +2,7 @@ import request from './request'
 
 export function getUserFlowInfo(data?: any) {
     return request({
-        url: 'api/pandown-user-flow/getUserFlowInfo',
+        url: 'api/user-flow/getUserFlowInfo',
         method: 'post',
         data
     })

@@ -1,12 +1,10 @@
-package com.pan.pandown.service.login;
+package com.pan.pandown.service.common;
 
 
 import com.auth0.jwt.interfaces.Claim;
-import com.pan.pandown.dao.model.LoginUser;
-import com.pan.pandown.util.redis.RedisService;
-import com.pan.pandown.util.security.JWTService;
+import com.pan.pandown.util.configuration.JWTConfiguration;
+import com.pan.pandown.dao.entity.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -21,8 +19,8 @@ import java.util.Objects;
 public class TokenService {
 
     //token有效期
-    @Value("${pandown.JWT.expireTime}")
-    private Integer expireTime;
+    @Autowired
+    private JWTConfiguration jwtConfiguration;
 
     @Autowired
     private JWTService jwtService;
@@ -52,7 +50,7 @@ public class TokenService {
      * @param loginUser
      */
     public void refreshToken(LoginUser loginUser){
-        long expireTimeMillis = expireTime * DAY_TO_SECOND;
+        long expireTimeMillis = jwtConfiguration.getExpireTime() * DAY_TO_SECOND;
         redisService.set(
                 LOGIN_TOKEN_KEY+loginUser.getPandownUser().getId(),
                 loginUser,

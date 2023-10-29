@@ -84,6 +84,7 @@ public class PandownUserController {
     @PostMapping("/postCaptcha")
     @ApiOperation(value = "用户注册邮箱验证码接口",notes = "发送邮箱验证码信息",httpMethod = "POST")
     public BaseResponse postCaptcha(@RequestBody Map<String,String> map){
+        log.info("注册邮箱接口");
         if(StringUtils.isBlank(map.get("email"))) return new FailResponse("缺少发送email");
         String captcha = pandownUserService.postCaptcha(map.get("email"));
         if (Objects.nonNull(captcha)) return new SuccessResponse();

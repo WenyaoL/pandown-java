@@ -2,7 +2,7 @@ import request from './request'
 
 export function getUserHistory(data?:any) {
     return request({
-        url: 'api/pandownParse/userHistory',
+        url: 'api/parse/userHistory',
         method: 'post',
         data
     })
@@ -10,7 +10,7 @@ export function getUserHistory(data?:any) {
 
 export function deleteUserParseHistory(data?:any){
     return request({
-        url: 'api/pandownParse/deleteUserParseHistory',
+        url: 'api/parse/deleteUserParseHistory',
         method: 'post',
         data
     })

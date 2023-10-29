@@ -1,4 +1,4 @@
-package com.pan.pandown.util.security;
+package com.pan.pandown.util;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 
@@ -13,7 +13,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RSAUtil {
+public class RSAUtils {
     // 密钥算法
     private static final String KEY_ALGORITHM = "RSA";
 
@@ -108,7 +108,7 @@ public class RSAUtil {
     }
 
     public static void main(String[] args) throws Exception {
-        Map pair = RSAUtil.initkeyPair();
+        Map pair = RSAUtils.initkeyPair();
         System.out.println("publicKeyStr:"+pair.get("publicKeyStr"));
         System.out.println("privateKeyStr:"+pair.get("privateKeyStr"));
     }

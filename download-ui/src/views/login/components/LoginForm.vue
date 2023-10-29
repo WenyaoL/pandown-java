@@ -6,8 +6,8 @@
         <el-input v-model="loginForm.email" autocomplete="off" placeholder="请输入邮箱"></el-input>
       </el-form-item>
       <el-form-item label="密码" prop="password">
-        <el-input v-model="loginForm.password" type="password" autocomplete="off" placeholder="请输入密码"
-          show-password></el-input>
+        <el-input v-model="loginForm.password" type="password" autocomplete="off" placeholder="请输入密码" show-password
+          @keyup.enter.native="submitForm()"></el-input>
       </el-form-item>
 
       <el-form-item>

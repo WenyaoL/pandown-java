@@ -23,7 +23,8 @@ spring:
       enabled: true
   mail:
     host: smtp.163.com
-    protocol: smtp
+    port: 465  #smtps 465端口
+    protocol: smtps  #smtps 465端口 smtp 25端口
     default-encoding: UTF-8
     username: xxx@163.com
     password: xxx
@@ -57,23 +58,20 @@ snowflake:
   data-center-id: 1
 
 pandown:
-  Account:
-    cookies: "xxx" #静态cookie
-  Flow:
+  db-security:
+    pwd-encrypt: true
+  flow:
     limit: 536870912000 #默认流量限制(单位字节)
-  JWT:
-    rsaPublicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALlqbfk6hyvTnfZWsIBHfQfHRyDCNGBHZAYvoLod2eZLcK6L/R+8cgpTsgx16KjY4Uv3EAPwtKlyoVPXgBu1AMcCAwEAAQ==
-    rsaPrivateKey: MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAuWpt+TqHK9Od9lawgEd9B8dHIMI0YEdkBi+guh3Z5ktwrov9H7xyClOyDHXoqNjhS/cQA/C0qXKhU9eAG7UAxwIDAQABAkEArTGWMkSSeMS9+5m0Ws7sInTpotblF73317Nrfg5eOLdNzuMfRJbXU/mm8rCddsonegfHV+mFQR4XxmlqW2X4EQIhAON8mZSKY3PqTiyvtGltbIeDAzeu/gi+z/1kFgBKXSC/AiEA0KfkVxRTIDqSeo0DEVPOFE6ZWkAgiY5LZ0KSg1bymfkCIEXPpxH+piaccQElqqfv/K5ZdlNQUIU+iXWpkVble07hAiA9QLw4j//jGy67CUBYStjZf0VniCHFH9+k3ZczNUgcyQIhAOIeGwTy19+7P84mgoiOIQc7xhc9dlJcdxmb4kQ6hYcN
+  jwt:
+    rsa-public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALlqbfk6hyvTnfZWsIBHfQfHRyDCNGBHZAYvoLod2eZLcK6L/R+8cgpTsgx16KjY4Uv3EAPwtKlyoVPXgBu1AMcCAwEAAQ==
+    rsa-private-key: MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAuWpt+TqHK9Od9lawgEd9B8dHIMI0YEdkBi+guh3Z5ktwrov9H7xyClOyDHXoqNjhS/cQA/C0qXKhU9eAG7UAxwIDAQABAkEArTGWMkSSeMS9+5m0Ws7sInTpotblF73317Nrfg5eOLdNzuMfRJbXU/mm8rCddsonegfHV+mFQR4XxmlqW2X4EQIhAON8mZSKY3PqTiyvtGltbIeDAzeu/gi+z/1kFgBKXSC/AiEA0KfkVxRTIDqSeo0DEVPOFE6ZWkAgiY5LZ0KSg1bymfkCIEXPpxH+piaccQElqqfv/K5ZdlNQUIU+iXWpkVble07hAiA9QLw4j//jGy67CUBYStjZf0VniCHFH9+k3ZczNUgcyQIhAOIeGwTy19+7P84mgoiOIQc7xhc9dlJcdxmb4kQ6hYcN
     expireTime: 30
-  downloadApi:
-    getFileList:
-      url: https://pan.baidu.com/share/wxlist
-    getSignAndTime:
-      url: https://pan.baidu.com/share/tplconfig
-    getDlink:
-      url: https://pan.baidu.com/api/sharedownload
-    getAccountState:
-      url: https://pan.baidu.com/api/gettemplatevariable
+  download-api:
+    filelist-url: https://pan.baidu.com/share/wxlist
+    signtime-url: https://pan.baidu.com/share/tplconfig
+    dlink-url: https://pan.baidu.com/api/sharedownload
+    accountstate-url: https://pan.baidu.com/api/gettemplatevariable
+
 
 server:
   port: 8080
@@ -82,3 +80,4 @@ springfox:
   documentation:
     swagger-ui:
       enabled: true
+

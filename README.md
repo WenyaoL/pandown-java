@@ -42,6 +42,36 @@ Aria2 Github地址：[aria2/aria2: aria2 is a lightweight multi-protocol & multi
 
 
 
+
+
+### 搭建教程
+
+#### 数据导入
+
+数据库的表在`download-data`目录下面，数据库用的是`mysql8`，项目自带一个admin账号，账号邮箱为`admin@pan.com`，密码为`123456`，搭建成功后切记在数据库中修改admin账号的密码。
+
+
+
+#### 后端搭建
+
+后端为`spring-boot`项目，直接使用maven打包即可。进入`download-core`目录，运行一下命令
+
+```
+mvn clean package -Dmaven.test.skip=true
+```
+
+
+
+#### 前端搭建
+
+前端为`Vue3`项目，使用`npm`打包。进入`download-ui`目录，运行一下命令
+
+```
+npm run build
+```
+
+
+
 ### LICENSE
 
 [MIT](./LICENSE)

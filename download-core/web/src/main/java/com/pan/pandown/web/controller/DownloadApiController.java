@@ -4,7 +4,7 @@ package com.pan.pandown.web.controller;
 import com.auth0.jwt.interfaces.Claim;
 import com.pan.pandown.service.IPandownUserFlowService;
 import com.pan.pandown.service.download.DownloadService;
-import com.pan.pandown.service.login.TokenService;
+import com.pan.pandown.service.common.TokenService;
 import com.pan.pandown.util.DTO.downloadApi.*;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
@@ -47,7 +47,7 @@ public class DownloadApiController {
     @Autowired(required = false)
     private HttpServletResponse httpServletResponse;
 
-    @PostMapping("/list_dir")
+    @PostMapping("/listDir")
     @ApiOperation(value = "分享目录解析接口", notes = "分享目录解析(列举指定目录)", httpMethod = "POST")
     public BaseResponse listShareDir(@RequestBody @Valid ListShareDirDTO listShareDirDTO) {
         Map map = downloadService.listDir(

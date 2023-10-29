@@ -2,7 +2,9 @@ package com.pan.pandown.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pan.pandown.util.CookieUtils;
 import com.pan.pandown.util.DTO.downloadApi.GetDlinkDTO;
+import com.pan.pandown.util.configuration.RequestServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -32,23 +33,9 @@ public class RequestService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${pandown.downloadApi.getFileList.url}")
-    private String fileListUrl;
+    @Autowired
+    private RequestServiceConfiguration requestServiceConfiguration;
 
-    @Value("${pandown.downloadApi.getSignAndTime.url}")
-    private String tplconfigUrl;
-
-    @Value("${pandown.downloadApi.getDlink.url}")
-    private String getDlinkUrl;
-
-    @Value("${pandown.downloadApi.getAccountState.url}")
-    private String getAccountStateUrl;
-
-
-    @Value("${pandown.Account.cookies}")
-    private String cookieStr; //静态cookies字符串
-
-    private Map<String, String> cookies = new ConcurrentHashMap<>();
 
 
 
@@ -64,7 +51,7 @@ public class RequestService {
     public ResponseEntity<Map> requestFileList(String surl, String pwd, String dir, Integer page,String bduss) {
         if(StringUtils.isBlank(bduss)) throw new RuntimeException("缺失bduss");
 
-        URI uri = UriComponentsBuilder.fromHttpUrl(fileListUrl)
+        URI uri = UriComponentsBuilder.fromHttpUrl(requestServiceConfiguration.getFilelistUrl())
                 .queryParam("channel", "weixin")
                 .queryParam("version", "2.2.2")
                 .queryParam("clienttype", 25)
@@ -104,26 +91,14 @@ public class RequestService {
         return responseEntity;
     }
 
-    /**
-     *
-     * @param surl
-     * @return
-     */
-    public ResponseEntity<Map> requestSignAndTime(String surl){
-        String BAIDUID = cookies.get("BAIDUID");
-        if (StringUtils.isBlank(BAIDUID)) {
-            cookies.putAll(strToCookieMap(cookieStr));
-            BAIDUID = cookies.get("BAIDUID");
-        }
-        return requestSignAndTime(surl,BAIDUID);
-    }
+
 
     /**
      * @param surl
      * @return
      */
     public ResponseEntity<Map> requestSignAndTime(String surl,String BAIDUID) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(tplconfigUrl)
+        URI uri = UriComponentsBuilder.fromHttpUrl(requestServiceConfiguration.getSigntimeUrl())
                 .queryParam("surl", surl)
                 .queryParam("fields", "sign,timestamp")
                 .queryParam("channel", "chunlei")
@@ -134,7 +109,7 @@ public class RequestService {
 
         HttpHeaders headers = new HttpHeaders();
         //生成cookie
-        List<String> cookieList = mapToCookieList(new HashMap<String, String>() {{
+        List<String> cookieList = CookieUtils.mapToCookieList(new HashMap<String, String>() {{
             put("BAIDUID", BAIDUID);
         }});
         headers.put(HttpHeaders.COOKIE, cookieList);
@@ -157,7 +132,7 @@ public class RequestService {
 
 
     public ResponseEntity<Map> requestDlink(GetDlinkDTO getDlinkDTO,String cookie) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(getDlinkUrl)
+        URI uri = UriComponentsBuilder.fromHttpUrl(requestServiceConfiguration.getDlinkUrl())
                 .queryParam("app_id", 250528)
                 .queryParam("channel", "chunlei")
                 .queryParam("clienttype", 12)
@@ -213,7 +188,7 @@ public class RequestService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("User-Agent", "LogStatistic");
-        headers.put("Cookie", mapToCookieList(new HashMap<String, String>() {{ put("BDUSS", BDUSS); }}));
+        headers.put("Cookie", CookieUtils.mapToCookieList(new HashMap<String, String>() {{ put("BDUSS", BDUSS); }}));
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(headers);
         //head请求(返回的响应是重定向响应,code:302)
         try {
@@ -226,7 +201,7 @@ public class RequestService {
     }
 
     public ResponseEntity<Map> requestAccountState(String bduss,String stoken){
-        URI uri = UriComponentsBuilder.fromHttpUrl(getAccountStateUrl)
+        URI uri = UriComponentsBuilder.fromHttpUrl(requestServiceConfiguration.getAccountstateUrl())
                 .queryParam("app_id", 250528)
                 .queryParam("channel", "chunlei")
                 .queryParam("clienttype", 0)
@@ -240,7 +215,7 @@ public class RequestService {
             put("BDUSS", bduss);
             put("STOKEN", stoken);
         }};
-        headers.put(HttpHeaders.COOKIE,mapToCookieList(cookies));
+        headers.put(HttpHeaders.COOKIE, CookieUtils.mapToCookieList(cookies));
         headers.set(HttpHeaders.USER_AGENT,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.69");
 
         //请求体(表单形式)
@@ -260,27 +235,7 @@ public class RequestService {
     }
 
 
-    public List<String> mapToCookieList(Map<String,String> map){
-        ArrayList<String> arrayList = new ArrayList<>();
-        map.forEach((k,v)->{
-            arrayList.add(k + "=" + v);
-        });
-        return arrayList;
-    }
 
-    public Map<String,String> strToCookieMap(String cookieStr){
-        if (Objects.isNull(cookieStr))return null;
-        String[] split = cookieStr.split(";");
-        HashMap<String, String> result = new HashMap<>();
-        Arrays.stream(split).forEach(str->{
-            String[] keyAndValue = str.trim().split("=",2);
-            String key = keyAndValue[0];
-            String value = keyAndValue[1];
-            result.put(key,value);
-        });
-
-        return result;
-    }
 
 
 }

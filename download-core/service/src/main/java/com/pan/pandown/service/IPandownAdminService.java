@@ -2,6 +2,7 @@ package com.pan.pandown.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pan.pandown.util.DTO.pandownAdminApi.AddUserDetailDTO;
+import com.pan.pandown.util.DTO.pandownAdminApi.DeleteUserDetailDTO;
 import com.pan.pandown.util.DTO.pandownAdminApi.UpdateUserDetailDTO;
 
 /**
@@ -16,4 +17,6 @@ public interface IPandownAdminService {
     boolean updateUserDetail(UpdateUserDetailDTO updateUserDetailDTO);
 
     boolean addUserDetail(AddUserDetailDTO addUserDetailDTO);
+
+    boolean deleteUserDetail(DeleteUserDetailDTO deleteUserDetailDTO);
 }

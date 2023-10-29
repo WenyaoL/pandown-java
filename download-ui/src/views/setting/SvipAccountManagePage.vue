@@ -161,7 +161,7 @@ onMounted(() => {
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button @click="dialogFormVisible = false">撤销</el-button>
+                    <el-button @click="dialogEditFormVisible = false">撤销</el-button>
                     <el-button type="primary" @click="handleEdit">修改</el-button>
                 </span>
             </template>

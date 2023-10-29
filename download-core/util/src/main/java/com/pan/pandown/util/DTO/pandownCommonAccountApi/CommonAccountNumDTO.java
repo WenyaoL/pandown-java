@@ -1,4 +1,4 @@
-package com.pan.pandown.util.DTO.dbtableSvipApi;
+package com.pan.pandown.util.DTO.pandownCommonAccountApi;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SvipAccountNumDTO {
+public class CommonAccountNumDTO {
     private Integer accountNum;
     private Long availableAccountNum;
 }

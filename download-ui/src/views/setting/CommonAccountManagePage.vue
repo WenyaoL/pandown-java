@@ -59,7 +59,6 @@ const addAccountHandle = () => {
         ElMessage.success("添加成功")
         dialogAddFormVisible.value = false
     }).catch(err=>{
-        ElMessage.error("添加失败")
         dialogAddFormVisible.value = false
     })
 }

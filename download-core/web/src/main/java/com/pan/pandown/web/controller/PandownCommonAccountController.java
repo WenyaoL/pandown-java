@@ -2,9 +2,11 @@ package com.pan.pandown.web.controller;
 
 
 import com.pan.pandown.dao.entity.DbtableCommonAccount;
-import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.service.IDbtableCommonAccountService;
-import com.pan.pandown.util.DTO.dbtableCommonAccountApi.CommonAccountNumDTO;
+import com.pan.pandown.util.DTO.pandownCommonAccountApi.AddCommonAccountDTO;
+import com.pan.pandown.util.DTO.pandownCommonAccountApi.CommonAccountNumDTO;
+import com.pan.pandown.util.DTO.pandownCommonAccountApi.DeleteCommonAccountDTO;
+import com.pan.pandown.util.DTO.pandownCommonAccountApi.UpdateCommonAccountDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
@@ -17,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,8 +33,8 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/dbtable-common-account")
-public class DbtableCommonAccountController {
+@RequestMapping("/api/common-account")
+public class PandownCommonAccountController {
 
     @Autowired
     private IDbtableCommonAccountService dbtableCommonAccountService;
@@ -54,24 +56,27 @@ public class DbtableCommonAccountController {
 
     @PostMapping("/deleteAccount")
     @ApiOperation(value = "删除账号接口", notes = "删除账号接口", httpMethod = "POST")
-    public BaseResponse deleteAccount(@RequestBody DbtableCommonAccount dbtableCommonAccount) {
-        boolean b = dbtableCommonAccountService.deleteAccountDetail(dbtableCommonAccount);
+    public BaseResponse deleteAccount(@RequestBody @Valid DeleteCommonAccountDTO deleteCommonAccountDTO) {
+        boolean b = dbtableCommonAccountService.deleteAccountDetail(deleteCommonAccountDTO.getId(), deleteCommonAccountDTO.getName());
         if (b) return new SuccessResponse();
         return new FailResponse();
     }
 
     @PostMapping("/addAccount")
     @ApiOperation(value = "添加账号接口", notes = "添加账号接口", httpMethod = "POST")
-    public BaseResponse addAccount(@RequestBody DbtableCommonAccount dbtableCommonAccount) {
-        DbtableCommonAccount account = dbtableCommonAccountService.addAccountDetail(dbtableCommonAccount);
+    public BaseResponse addAccount(@RequestBody @Valid AddCommonAccountDTO addCommonAccountDTO) {
+        DbtableCommonAccount account = dbtableCommonAccountService.addAccountDetail(addCommonAccountDTO.getCookie());
         if (Objects.isNull(account)) return new FailResponse("添加失败");
         return new SuccessResponse(account);
     }
 
     @PostMapping("/updateAccount")
     @ApiOperation(value = "更新svip账号接口", notes = "更新svip账号接口", httpMethod = "POST")
-    public BaseResponse updateAccount(@RequestBody DbtableCommonAccount dbtableCommonAccount) {
-        boolean b = dbtableCommonAccountService.updateAccountDetail(dbtableCommonAccount);
+    public BaseResponse updateAccount(@RequestBody @Valid UpdateCommonAccountDTO updateCommonAccountDTO) {
+        boolean b = dbtableCommonAccountService.updateAccountDetail(
+                updateCommonAccountDTO.getId(),
+                updateCommonAccountDTO.getName(),
+                updateCommonAccountDTO.getCookie());
         if (b) return new SuccessResponse();
         return new FailResponse();
     }

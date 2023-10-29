@@ -5,11 +5,10 @@ import com.pan.pandown.api.RequestService;
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.dao.mapper.DbtableSvipMapper;
 import com.pan.pandown.service.IDbtableSvipService;
-import com.pan.pandown.service.download.DownloadService;
-import com.pan.pandown.util.DTO.dbtableSvipApi.AddSvipDetailDTO;
-import com.pan.pandown.util.DTO.dbtableSvipApi.SvipAccountNumDTO;
+import com.pan.pandown.service.download.CheckHelper;
+import com.pan.pandown.util.DTO.pandownSvipAccountApi.SvipAccountNumDTO;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
-import com.pan.pandown.util.redis.RedisService;
+import com.pan.pandown.service.common.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +16,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * <p>
@@ -34,6 +31,7 @@ import java.util.Objects;
 @Service
 public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, DbtableSvip> implements IDbtableSvipService {
 
+
     @Resource
     private DbtableSvipMapper dbtableSvipMapper;
 
@@ -45,6 +43,9 @@ public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, Dbtab
 
     @Resource
     private RedisService redisService;
+
+    @Autowired
+    private CheckHelper checkHelper;
 
     private final String PANDOWN_SVIP = "Pandown_svip:";
     private final String PANDOWN_SVIP_IDX = "for_idx";
@@ -67,96 +68,86 @@ public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, Dbtab
     }
 
     @Override
-    public boolean deleteSvipDetail(DbtableSvip dbtableSvip) {
-        boolean b = removeById(dbtableSvip.getId());
-        return b;
+    public boolean deleteSvipDetail(Long id) {
+        return removeById(id);
     }
 
     @Override
-    public boolean updateSvipDetail(DbtableSvip dbtableSvip) {
+    public boolean updateSvipDetail(Long id,String bduss,String stoken) {
 
-        ResponseEntity<Map> responseEntity = requestService.requestAccountState(dbtableSvip.getSvipBduss(), dbtableSvip.getSvipStoken());
+        ResponseEntity<Map> responseEntity = requestService.requestAccountState(bduss, stoken);
+        if (!checkHelper.isSuccessBaiduResponse(responseEntity)) throw new RuntimeException("更新的账号存在异常");
 
-        if (responseEntity.getStatusCode().is2xxSuccessful()){
-            Map result = (Map)responseEntity.getBody().get("result");
-            String username = result.get("username").toString();
-            String loginstate = result.get("loginstate").toString();
-            Integer is_vip = Integer.parseInt(result.get("is_vip").toString());
-            Integer is_svip = Integer.parseInt(result.get("is_svip").toString());
-            Integer is_evip = Integer.parseInt(result.get("is_evip").toString());
+        Map result = (Map)responseEntity.getBody().get("result");
+        String username = result.get("username").toString();
+        String loginstate = result.get("loginstate").toString();
+        Integer is_vip = Integer.parseInt(result.get("is_vip").toString());
+        Integer is_svip = Integer.parseInt(result.get("is_svip").toString());
+        Integer is_evip = Integer.parseInt(result.get("is_evip").toString());
 
-            //判断登录状态
-            if (loginstate.equals("0")) return false;
+        //判断登录状态
+        if (loginstate.equals("0")) return false;
 
-            //判断会员类型
-            int vip_type = 0;
-            if (is_vip.equals(1)) vip_type = 1;
-            if (is_svip.equals(1)) vip_type = 2;
-            if (is_evip.equals(1)) vip_type = 3;
+        //判断会员类型
+        int vip_type = 0;
+        if (is_vip.equals(1)) vip_type = 1;
+        if (is_svip.equals(1)) vip_type = 2;
+        if (is_evip.equals(1)) vip_type = 3;
 
-            if (vip_type == 0) return false;
+        if (vip_type == 0) return false;
 
-            boolean update = update().eq("id", dbtableSvip.getId())
-                    .set("svip_bduss", dbtableSvip.getSvipBduss())
-                    .set("svip_stoken", dbtableSvip.getSvipStoken())
-                    .set("name",username)
-                    .set("vip_type",vip_type)
-                    .set("update_time",LocalDateTime.now())
-                    .update();
-            return update;
-        }
+        boolean update = update().eq("id", id)
+                .set("svip_bduss", bduss)
+                .set("svip_stoken", stoken)
+                .set("name",username)
+                .set("vip_type",vip_type)
+                .set("update_time",LocalDateTime.now())
+                .update();
+        return update;
 
-        return false;
     }
 
     @Override
-    public DbtableSvip addSvipDetail(DbtableSvip dbtableSvip) {
+    public DbtableSvip addSvipDetail(String bduss,String stoken) {
+
+        ResponseEntity<Map> responseEntity = requestService.requestAccountState(bduss, stoken);
+        //检测响应
+        if (!checkHelper.isSuccessBaiduResponse(responseEntity)) throw new RuntimeException("添加的账号存在异常");
+
+        Map result = (Map)responseEntity.getBody().get("result");
+        String username = result.get("username").toString();
+        String loginstate = result.get("loginstate").toString();
+        Integer is_vip = Integer.parseInt(result.get("is_vip").toString());
+        Integer is_svip = Integer.parseInt(result.get("is_svip").toString());
+        Integer is_evip = Integer.parseInt(result.get("is_evip").toString());;
+
+        //判断登录状态
+        if (loginstate.equals("0")) return null;
+        //判断会员类型
+        int vip_type = 0;
+        if (is_vip.equals(1)) vip_type = 1;
+        if (is_svip.equals(1)) vip_type = 2;
+        if (is_evip.equals(1)) vip_type = 3;
+        if (vip_type == 0) return null;
 
 
-        ResponseEntity<Map> responseEntity = requestService.requestAccountState(dbtableSvip.getSvipBduss(), dbtableSvip.getSvipStoken());
-        if(Objects.isNull(responseEntity)) return null;
+        DbtableSvip dbtableSvip = new DbtableSvip();
+        //生成雪花
+        long nextId = snowflakeGenerator.nextId();
 
+        //注入用户名和状态等信息
+        dbtableSvip.setId(nextId);
+        dbtableSvip.setName(username);
+        dbtableSvip.setSvipBduss(bduss);
+        dbtableSvip.setSvipStoken(stoken);
+        dbtableSvip.setState(1);
+        dbtableSvip.setVipType(vip_type);
+        dbtableSvip.setCreateTime(LocalDateTime.now());
+        dbtableSvip.setUpdateTime(LocalDateTime.now());
 
-        if (responseEntity.getBody().get("errno").toString().equals("0")){
-            Map result = (Map)responseEntity.getBody().get("result");
-            String username = result.get("username").toString();
-            String loginstate = result.get("loginstate").toString();
-            Integer is_vip = Integer.parseInt(result.get("is_vip").toString());
-            Integer is_svip = Integer.parseInt(result.get("is_svip").toString());
-            Integer is_evip = Integer.parseInt(result.get("is_evip").toString());;
+        if (!save(dbtableSvip))throw new RuntimeException("添加失败");
+        return dbtableSvip;
 
-            //判断登录状态
-            if (loginstate.equals("0")) return null;
-
-            //判断会员类型
-            int vip_type = 0;
-            if (is_vip.equals(1)) vip_type = 1;
-            if (is_svip.equals(1)) vip_type = 2;
-            if (is_evip.equals(1)) vip_type = 3;
-
-            if (vip_type == 0) return null;
-
-            //生成雪花
-            long nextId = snowflakeGenerator.nextId();
-
-
-            //注入用户名和状态等信息
-            dbtableSvip.setId(nextId);
-            dbtableSvip.setName(username);
-            dbtableSvip.setState(1);
-            dbtableSvip.setVipType(vip_type);
-            dbtableSvip.setCreateTime(LocalDateTime.now());
-            dbtableSvip.setUpdateTime(LocalDateTime.now());
-            //保存
-            boolean save = save(dbtableSvip);
-            if (save){
-                return dbtableSvip;
-            }
-
-            return null;
-        }
-
-        return null;
     }
 
     @Override
@@ -197,4 +188,9 @@ public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, Dbtab
         redisService.exec();
         return update;
     }
+
+
+
+
+
 }

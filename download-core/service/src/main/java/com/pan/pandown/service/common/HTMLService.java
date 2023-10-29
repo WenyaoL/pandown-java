@@ -1,4 +1,4 @@
-package com.pan.pandown.service.login;
+package com.pan.pandown.service.common;
 
 /**
  * @author yalier(wenyao)

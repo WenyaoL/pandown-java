@@ -4,15 +4,12 @@ package com.pan.pandown.web.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pan.pandown.dao.entity.PandownParse;
 import com.pan.pandown.dao.entity.PandownUser;
-import com.pan.pandown.dao.model.LoginUser;
 import com.pan.pandown.service.IPandownParseService;
 import com.pan.pandown.util.DTO.BasePageDTO;
 import com.pan.pandown.util.DTO.pandownParseApi.DeleteParseHistoryDTO;
-import com.pan.pandown.util.DTO.pandownUserApi.UserRegisterDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
-import com.pan.pandown.util.constants.RegisterCode;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -34,7 +30,7 @@ import java.util.List;
  * @since 2023-05-26
  */
 @RestController
-@RequestMapping("/api/pandownParse")
+@RequestMapping("/api/parse")
 public class PandownParseController {
 
     @Autowired

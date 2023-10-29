@@ -23,7 +23,7 @@ import java.util.Objects;
 public class PandownUserFlowServiceImpl extends ServiceImpl<PandownUserFlowMapper, PandownUserFlow> implements IPandownUserFlowService {
 
 
-    @Value("${pandown.Flow.limit}")
+    @Value("${pandown.flow.limit}")
     private Long defaultLimitFlow;
 
     @Override

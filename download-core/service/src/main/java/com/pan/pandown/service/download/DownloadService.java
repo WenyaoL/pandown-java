@@ -10,7 +10,9 @@ import com.pan.pandown.service.IDbtableCommonAccountService;
 import com.pan.pandown.service.IDbtableSvipService;
 import com.pan.pandown.service.IPandownParseService;
 import com.pan.pandown.service.IPandownUserFlowService;
+import com.pan.pandown.util.CookieUtils;
 import com.pan.pandown.util.DTO.downloadApi.*;
+import com.pan.pandown.util.exception.AccountException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +41,8 @@ public class DownloadService {
     @Autowired
     private IPandownParseService pandownParseService;
 
-
+    @Autowired
+    private CheckHelper checkHelper;
 
     /**
      *  以文件树列出文件夹下所有文件，包含文件夹下面的子文件夹
@@ -102,11 +105,16 @@ public class DownloadService {
 
         DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
         //检测账号cookie
-        Map<String, String> cookie = checkBaiduAccountCookie(account);
+        Map<String, String> cookie = checkHelper.checkBaiduAccountCookie(account);
         //请求解析目录
         ResponseEntity<Map> responseEntity = requestService.requestFileList(surl, pwd, dir, page,cookie.get("BDUSS"));
         //检测响应
-        checkBaiduResponse(responseEntity,account);
+        try {
+            checkHelper.checkBaiduResponse(responseEntity);
+        } catch (AccountException e) {
+            dbtableCommonAccountService.freezeCommonAccount(account.getId());
+            throw new RuntimeException(e);
+        }
 
         //返回
         return (Map) responseEntity.getBody().getOrDefault("data",null);
@@ -120,11 +128,16 @@ public class DownloadService {
         DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
         if (account == null) throw new RuntimeException("已无可用的百度云普通账号");
         //check account cookie
-        Map<String, String> cookie = checkBaiduAccountCookie(account);
+        Map<String, String> cookie = checkHelper.checkBaiduAccountCookie(account);
         //request sign and time
         ResponseEntity<Map> responseEntity = requestService.requestSignAndTime(surl,cookie.get("BAIDUID"));
         //检测响应
-        checkBaiduResponse(responseEntity,account);
+        try {
+            checkHelper.checkBaiduResponse(responseEntity);
+        } catch (AccountException e) {
+            dbtableCommonAccountService.freezeCommonAccount(account.getId());
+            throw new RuntimeException(e);
+        }
 
         //mapper 转换
         ObjectMapper objectMapper = new ObjectMapper();
@@ -142,11 +155,16 @@ public class DownloadService {
     public List<ShareFileDTO> getDlink(GetDlinkDTO getDlinkDTO){
         DbtableCommonAccount account = dbtableCommonAccountService.getNextCommonAccount();
         //check account cookie
-        checkBaiduAccountCookie(account);
+        checkHelper.checkBaiduAccountCookie(account);
         //request
         ResponseEntity<Map> responseEntity = requestService.requestDlink(getDlinkDTO,account.getCookie());
         //检测响应
-        checkBaiduResponse(responseEntity,account);
+        try {
+            checkHelper.checkBaiduResponse(responseEntity);
+        } catch (AccountException e) {
+            dbtableCommonAccountService.freezeCommonAccount(account.getId());
+            throw new RuntimeException(e);
+        }
 
         //json转Java对象
         ObjectMapper objectMapper = new ObjectMapper();
@@ -174,7 +192,7 @@ public class DownloadService {
         DbtableSvip nextSvip = dbtableSvipService.getNextSvip();
         ResponseEntity<String> responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
 
-        checkBaiduSvipResponse(responseEntity,nextSvip);
+        checkHelper.checkBaiduSvipResponse(responseEntity,nextSvip);
 
         List<String> location = responseEntity.getHeaders().get("Location");
         String link = location.get(0);
@@ -275,74 +293,13 @@ public class DownloadService {
     }
 
 
-    /**
-     * 检测普通接口的响应
-     * @param responseEntity
-     * @param account
-     */
-    public void checkBaiduResponse(ResponseEntity<Map> responseEntity,DbtableCommonAccount account){
-        //获取状态消息
-        String errno = responseEntity.getBody().get("errno").toString();
-        BaiduApiErrorNo baiduApiError = BaiduApiErrorNo.toBaiduApiError(errno);
 
 
-        //账号问题 冻结
-        if (BaiduApiErrorNo.isAccountError(baiduApiError)) {
-            dbtableCommonAccountService.freezeCommonAccount(account.getId());
-        }
 
 
-        //链接问题 抛异常
-        if (BaiduApiErrorNo.isLinkError(baiduApiError)) {
-            throw new RuntimeException(baiduApiError.getMsg());
-        }
-
-        //未知错误 抛异常
-        if (BaiduApiErrorNo.isUnknownError(baiduApiError)){
-            throw new RuntimeException(baiduApiError.getMsg() + errno);
-        }
-
-    }
-
-    /**
-     * 检测svip接口的响应
-     * @param responseEntity
-     * @param account
-     */
-    public void checkBaiduSvipResponse(ResponseEntity<String> responseEntity,DbtableSvip account) throws RuntimeException{
-
-        List<String> location = responseEntity.getHeaders().get("Location");
-
-        if (Objects.isNull(location) && location.size()==0) throw new RuntimeException("SVIP链接抓取失败");
-
-    }
 
 
-    public void checkBaiduAccount(DbtableCommonAccount account){
-        Map<String, String> cookie = checkBaiduAccountCookie(account);
-        ResponseEntity<Map> responseEntity = requestService.requestAccountState(cookie.get("BDUSS"), cookie.get("STOKEN"));
-        Map body = responseEntity.getBody();
-
-    }
-
-    public Map<String, String> checkBaiduAccountCookie(DbtableCommonAccount account){
-        String cookie = account.getCookie();
-        Map<String, String> cookieMap = requestService.strToCookieMap(cookie);
-
-        String bduss = cookieMap.get("BDUSS");
-        if (StringUtils.isBlank(bduss)) throw new RuntimeException("账号:"+account.getId()+"cookie异常,缺失BDUSS");
-
-        String stoken = cookieMap.get("STOKEN");
-        if (StringUtils.isBlank(stoken)) throw new RuntimeException("账号:"+account.getId()+"cookie异常,缺失STOKEN");
-
-        String baiduid = cookieMap.get("BAIDUID");
-        if (StringUtils.isBlank(baiduid)) {
-            log.error(cookieMap.toString());
-            throw new RuntimeException("账号:"+account.getId()+"cookie异常,缺失BAIDUID");
-        }
 
 
-        return cookieMap;
-    }
 
 }

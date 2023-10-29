@@ -31,6 +31,11 @@ CREATE TABLE `dbtable_common_account`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
+
+
+
+
+
 -- ----------------------------
 -- Table structure for dbtable_svip
 -- ----------------------------
@@ -46,6 +51,14 @@ CREATE TABLE `dbtable_svip`  (
   `update_time` datetime NOT NULL COMMENT '跟新时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = MyISAM AUTO_INCREMENT = 4 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+
+
+
+
+
+
+
 
 -- ----------------------------
 -- Table structure for pandown_parse
@@ -65,6 +78,14 @@ CREATE TABLE `pandown_parse`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = MyISAM AUTO_INCREMENT = 28 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
+
+
+
+
+
+
+
+
 -- ----------------------------
 -- Table structure for pandown_permission
 -- ----------------------------
@@ -80,13 +101,17 @@ CREATE TABLE `pandown_permission`  (
 -- ----------------------------
 -- Records of pandown_permission
 -- ----------------------------
-INSERT INTO `pandown_permission` VALUES (1, 'dbtableSvipApi', 'dbtableSvip服务接口服务权限', '/api/dbtableSvip/**');
+INSERT INTO `pandown_permission` VALUES (1, 'dbtableSvipApi', 'dbtableSvip服务接口服务权限', '/api/svip/**');
 INSERT INTO `pandown_permission` VALUES (2, 'downloadApi', 'downloadApi服务接口服务权限', '/api/download/**');
-INSERT INTO `pandown_permission` VALUES (3, 'dbtableCommonAccountApi', 'dbtableCommonAccount服务接口权限', '/api/dbtable-common-account/**');
-INSERT INTO `pandown_permission` VALUES (4, 'pandownUserFlowApi', '用户流量查询接口', '/api/pandown-user-flow/**');
-INSERT INTO `pandown_permission` VALUES (5, 'pandownAdminApi', '管理员接口', '/api/pandownAdmin/**');
+INSERT INTO `pandown_permission` VALUES (3, 'dbtableCommonAccountApi', 'dbtableCommonAccount服务接口权限', '/api/common-account/**');
+INSERT INTO `pandown_permission` VALUES (4, 'pandownUserFlowApi', '用户流量查询接口', '/api/user-flow/**');
+INSERT INTO `pandown_permission` VALUES (5, 'pandownAdminApi', '管理员接口', '/api/admin/**');
+INSERT INTO `pandown_permission` VALUES (6, 'pandownParseApi', '历史查询接口', '/api/parse/**');
 
-SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+
 
 
 -- ----------------------------
@@ -110,15 +135,19 @@ CREATE TABLE `pandown_role`  (
 INSERT INTO `pandown_role` VALUES (1, 'admin', '管理员', '2023-05-11 21:14:50', NULL, '1');
 INSERT INTO `pandown_role` VALUES (2, 'user', '普通用户', '2023-05-11 21:14:57', NULL, '1');
 
-SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+
+
 
 -- ----------------------------
 -- Table structure for pandown_role_permission
 -- ----------------------------
 DROP TABLE IF EXISTS `pandown_role_permission`;
 CREATE TABLE `pandown_role_permission`  (
-  `role_id` int(11) NOT NULL,
-  `permission_id` int(11) NOT NULL,
+  `role_id` int(5) NOT NULL,
+  `permission_id` int(5) NOT NULL,
   PRIMARY KEY (`role_id`, `permission_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
@@ -130,10 +159,18 @@ INSERT INTO `pandown_role_permission` VALUES (1, 2);
 INSERT INTO `pandown_role_permission` VALUES (1, 3);
 INSERT INTO `pandown_role_permission` VALUES (1, 4);
 INSERT INTO `pandown_role_permission` VALUES (1, 5);
+INSERT INTO `pandown_role_permission` VALUES (1, 6);
 INSERT INTO `pandown_role_permission` VALUES (2, 2);
 INSERT INTO `pandown_role_permission` VALUES (2, 4);
+INSERT INTO `pandown_role_permission` VALUES (2, 6);
 
-SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+
+
+
+
 
 -- ----------------------------
 -- Table structure for pandown_user
@@ -149,6 +186,18 @@ CREATE TABLE `pandown_user`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Records of pandown_user
+-- ----------------------------
+INSERT INTO `pandown_user` VALUES (0, 'admin', '$2a$10$TGgMTsmRYukeCS7IaLf7q.ua3LoXwwjA77EZWxcl1ovGX6f2KopUW', 'admin@pan.com', NULL);
+
+
+
+
+
+
+
+
+-- ----------------------------
 -- Table structure for pandown_user_flow
 -- ----------------------------
 DROP TABLE IF EXISTS `pandown_user_flow`;
@@ -162,6 +211,21 @@ CREATE TABLE `pandown_user_flow`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Records of pandown_user_flow
+-- ----------------------------
+INSERT INTO `pandown_user_flow` VALUES (0, 0, 0, 536870912000, 1);
+
+
+
+
+
+
+
+
+
+
+
+-- ----------------------------
 -- Table structure for pandown_user_role
 -- ----------------------------
 DROP TABLE IF EXISTS `pandown_user_role`;
@@ -172,5 +236,12 @@ CREATE TABLE `pandown_user_role`  (
   `creator` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`user_id`, `role_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of pandown_user_role
+-- ----------------------------
+INSERT INTO `pandown_user_role` VALUES (0, 1, '2023-10-28 20:04:42', 'system');
+
+
 
 SET FOREIGN_KEY_CHECKS = 1;

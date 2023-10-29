@@ -1,4 +1,4 @@
-package com.pan.pandown.util.redis;
+package com.pan.pandown.service.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

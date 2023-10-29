@@ -1,9 +1,10 @@
 package com.pan.pandown.web.config.security;
 
 import com.auth0.jwt.algorithms.Algorithm;
-import com.pan.pandown.util.security.JWTService;
-import com.pan.pandown.util.security.RSAUtil;
-import org.springframework.beans.factory.annotation.Value;
+import com.pan.pandown.util.configuration.JWTConfiguration;
+import com.pan.pandown.service.common.JWTService;
+import com.pan.pandown.util.RSAUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,17 +21,15 @@ import java.security.spec.X509EncodedKeySpec;
 @Configuration
 public class JWTConfig {
 
-    @Value("${pandown.JWT.rsaPublicKey}")
-    private String rsaPublicKey;
 
-    @Value("${pandown.JWT.rsaPrivateKey}")
-    private String rsaPrivateKey;
+    @Autowired
+    private JWTConfiguration jwtConfiguration;
 
     @Bean
     public Algorithm algorithm() throws Exception {
         return Algorithm.RSA256(
-                (RSAPublicKey) RSAUtil.base64strToPublicKey(rsaPublicKey, X509EncodedKeySpec.class),
-                (RSAPrivateKey) RSAUtil.base64strToPrivateKey(rsaPrivateKey, PKCS8EncodedKeySpec.class)
+                (RSAPublicKey) RSAUtils.base64strToPublicKey(jwtConfiguration.getRsaPublicKey(), X509EncodedKeySpec.class),
+                (RSAPrivateKey) RSAUtils.base64strToPrivateKey(jwtConfiguration.getRsaPrivateKey(), PKCS8EncodedKeySpec.class)
         );
     }
 

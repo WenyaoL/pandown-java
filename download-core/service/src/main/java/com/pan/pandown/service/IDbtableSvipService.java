@@ -2,11 +2,9 @@ package com.pan.pandown.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pan.pandown.dao.entity.DbtableSvip;
-import com.pan.pandown.util.DTO.dbtableSvipApi.AddSvipDetailDTO;
-import com.pan.pandown.util.DTO.dbtableSvipApi.SvipAccountNumDTO;
+import com.pan.pandown.util.DTO.pandownSvipAccountApi.SvipAccountNumDTO;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -32,25 +30,22 @@ public interface IDbtableSvipService extends IService<DbtableSvip> {
 
     /**
      * 删除账号信息
-     * @param dbtableSvip
      * @return
      */
-    boolean deleteSvipDetail(DbtableSvip dbtableSvip);
+    boolean deleteSvipDetail(Long id);
 
     /**
      * 跟新账号信息
-     * @param dbtableSvip
      * @return
      */
-    boolean updateSvipDetail(DbtableSvip dbtableSvip);
+    boolean updateSvipDetail(Long id,String bduss,String stoken);
 
 
     /**
      * 添加svip账号
-     * @param dbtableSvip
      * @return 添加的svip账号
      */
-    DbtableSvip addSvipDetail(DbtableSvip dbtableSvip);
+    DbtableSvip addSvipDetail(String bduss,String stoken);
 
     List<DbtableSvip> listAvailableSvip();
 

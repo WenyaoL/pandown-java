@@ -2,21 +2,24 @@ package com.pan.pandown.web.controller;
 
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.service.IDbtableSvipService;
-import com.pan.pandown.util.DTO.dbtableSvipApi.AddSvipDetailDTO;
-import com.pan.pandown.util.DTO.dbtableSvipApi.SvipAccountNumDTO;
+import com.pan.pandown.util.DTO.pandownSvipAccountApi.AddSvipAccountDTO;
+import com.pan.pandown.util.DTO.pandownSvipAccountApi.DeleteSvipAccountDTO;
+import com.pan.pandown.util.DTO.pandownSvipAccountApi.SvipAccountNumDTO;
+import com.pan.pandown.util.DTO.pandownSvipAccountApi.UpdateSvipAccountDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -26,8 +29,8 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/dbtableSvip")
-public class DbtableSvipController {
+@RequestMapping("/api/svip")
+public class PandownSvipAccountController {
 
     @Autowired
     private IDbtableSvipService dbtableSvipService;
@@ -49,28 +52,38 @@ public class DbtableSvipController {
 
     @PostMapping("/deleteAccount")
     @ApiOperation(value = "删除svip账号接口", notes = "删除svip账号接口", httpMethod = "POST")
-    public BaseResponse deleteAccount(@RequestBody DbtableSvip dbtableSvip) {
-        boolean b = dbtableSvipService.deleteSvipDetail(dbtableSvip);
+    public BaseResponse deleteAccount(@RequestBody @Valid DeleteSvipAccountDTO deleteSvipAccountDTO) {
+        boolean b = dbtableSvipService.deleteSvipDetail(deleteSvipAccountDTO.getId());
         if(b) return new SuccessResponse();
         else return new FailResponse();
     }
 
     @PostMapping("/addAccount")
     @ApiOperation(value = "添加svip账号接口", notes = "添加svip账号接口", httpMethod = "POST")
-    public BaseResponse addAccount(@RequestBody DbtableSvip dbtableSvip) {
+    public BaseResponse addAccount(@RequestBody @Valid AddSvipAccountDTO addSvipAccountDTO) {
 
-        DbtableSvip svip = dbtableSvipService.addSvipDetail(dbtableSvip);
+        String svipBduss = addSvipAccountDTO.getSvipBduss();
+        if (svipBduss.startsWith("BDUSS=")) svipBduss = svipBduss.replaceFirst("BDUSS=","");
+
+        String svipStoken = addSvipAccountDTO.getSvipStoken();
+        if (svipStoken.startsWith("STOKEN=")) svipStoken = svipStoken.replaceFirst("STOKEN=","");
+
+        DbtableSvip svip = dbtableSvipService.addSvipDetail(svipBduss,svipStoken);
         if(Objects.isNull(svip)) return new FailResponse();
-
         return new SuccessResponse(svip);
     }
 
     @PostMapping("/updateAccount")
     @ApiOperation(value = "更新svip账号接口", notes = "更新svip账号接口", httpMethod = "POST")
-    public BaseResponse updateAccount(@RequestBody DbtableSvip dbtableSvip) {
-        if (Objects.isNull(dbtableSvip.getId())) return new FailResponse("id不能为空");
+    public BaseResponse updateAccount(@RequestBody @Valid UpdateSvipAccountDTO updateSvipAccountDTO) {
 
-        boolean b = dbtableSvipService.updateSvipDetail(dbtableSvip);
+        String svipBduss = updateSvipAccountDTO.getSvipBduss();
+        if (svipBduss.startsWith("BDUSS=")) svipBduss = svipBduss.replaceFirst("BDUSS=","");
+
+        String svipStoken = updateSvipAccountDTO.getSvipStoken();
+        if (svipStoken.startsWith("STOKEN=")) svipStoken = svipStoken.replaceFirst("STOKEN=","");
+
+        boolean b = dbtableSvipService.updateSvipDetail(updateSvipAccountDTO.getId(),svipBduss,svipStoken);
         if (b){
             return new SuccessResponse();
         }else {

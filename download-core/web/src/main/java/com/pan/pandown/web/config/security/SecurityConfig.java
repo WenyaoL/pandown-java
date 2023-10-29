@@ -3,7 +3,7 @@ package com.pan.pandown.web.config.security;
 
 import com.pan.pandown.dao.entity.PandownPermission;
 import com.pan.pandown.service.IPandownPermissionService;
-import com.pan.pandown.web.filter.JwtAuthenticationFilter;
+import com.pan.pandown.web.config.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

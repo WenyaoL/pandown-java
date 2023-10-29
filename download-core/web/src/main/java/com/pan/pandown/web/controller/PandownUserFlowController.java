@@ -4,16 +4,12 @@ package com.pan.pandown.web.controller;
 import com.auth0.jwt.interfaces.Claim;
 import com.pan.pandown.dao.entity.PandownUserFlow;
 import com.pan.pandown.service.IPandownUserFlowService;
-import com.pan.pandown.service.login.TokenService;
+import com.pan.pandown.service.common.TokenService;
 import com.pan.pandown.util.baseResp.BaseResponse;
-import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -30,7 +26,7 @@ import java.util.Map;
  * @since 2023-05-21
  */
 @RestController
-@RequestMapping("/api/pandown-user-flow")
+@RequestMapping("/api/user-flow")
 public class PandownUserFlowController {
 
     @Autowired

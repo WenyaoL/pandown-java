@@ -1,4 +1,4 @@
-package com.pan.pandown.util.security;
+package com.pan.pandown.service.common;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;

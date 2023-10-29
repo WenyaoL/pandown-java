@@ -2,7 +2,7 @@ import request from './request'
 
 export function getSvipAccountNum(data?:any){
   return request({
-    url: 'api/dbtableSvip/getAccountNum',
+    url: 'api/svip/getAccountNum',
     method: 'post',
     data
   })
@@ -10,14 +10,14 @@ export function getSvipAccountNum(data?:any){
 
 export function getSvipAccountDetail(){
   return request({
-    url: 'api/dbtableSvip/getAccountDetail',
+    url: 'api/svip/getAccountDetail',
     method: 'post',
   })
 }
 
 export function addSvipAccount(data:any){
   return request({
-    url: 'api/dbtableSvip/addAccount',
+    url: 'api/svip/addAccount',
     method: 'post',
     data
   })
@@ -25,7 +25,7 @@ export function addSvipAccount(data:any){
 
 export function deleteSvipAccount(data:any){
   return request({
-    url: 'api/dbtableSvip/deleteAccount',
+    url: 'api/svip/deleteAccount',
     method: 'post',
     data
   })
@@ -33,7 +33,7 @@ export function deleteSvipAccount(data:any){
 
 export function updateSvipAccount(data:any){
   return request({
-    url: 'api/dbtableSvip/updateAccount',
+    url: 'api/svip/updateAccount',
     method: 'post',
     data
   })
@@ -41,7 +41,7 @@ export function updateSvipAccount(data:any){
 
 export function getCommonAccountNum(data?:any){
   return request({
-    url: 'api/dbtable-common-account/getAccountNum',
+    url: 'api/common-account/getAccountNum',
     method: 'post',
     data
   })
@@ -49,14 +49,14 @@ export function getCommonAccountNum(data?:any){
 
 export function getCommonAccountDetail(){
   return request({
-    url: 'api/dbtable-common-account/getAccountDetail',
+    url: 'api/common-account/getAccountDetail',
     method: 'post'
   })
 }
 
 export function addCommonAccount(data:any){
   return request({
-    url: 'api/dbtable-common-account/addAccount',
+    url: 'api/common-account/addAccount',
     method: 'post',
     data
   })
@@ -64,7 +64,7 @@ export function addCommonAccount(data:any){
 
 export function updateCommonAccount(data:any){
   return request({
-    url: 'api/dbtable-common-account/updateAccount',
+    url: 'api/common-account/updateAccount',
     method: 'post',
     data
   })
@@ -72,7 +72,7 @@ export function updateCommonAccount(data:any){
 
 export function deleteCommonAccount(data:any){
   return request({
-    url: 'api/dbtable-common-account/deleteAccount',
+    url: 'api/common-account/deleteAccount',
     method: 'post',
     data
   })

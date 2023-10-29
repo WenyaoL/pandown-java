@@ -8,23 +8,15 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotNull;
 
 /**
- * @author yalier(wenyao)
+ * @author yalier
  * @Description
- * @since 2023-05-25
+ * @since 2023-10-28
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UpdateUserDetailDTO {
+public class DeleteUserDetailDTO {
+
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
-    private String username;
-
-    private String roleName;
-
-    private Long limitFlow;
-
-    private int state;
 }
