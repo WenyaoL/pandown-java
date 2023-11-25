@@ -10,8 +10,8 @@ public enum BaiduApiErrorNo {
 
     ERROR_ACCOUNT_COOKIE(9019,"账号cookie信息失效"),
     ERROR_ACCOUNT_NOLOGIN(-6,"请检查云盘普通账号是否正常登录"),
-    ERROR_ACCOUNT_NOT_Available(9013,"普通账号被限制，请检查普通账号状态"),
-    ERROR_ACCOUNT_D_Available(8001,"普通账号可能被限制，请检查普通账号状态"),
+    ERROR_ACCOUNT_NOT_Available(9013,"账号被限制，请检查普通账号状态"),
+    ERROR_ACCOUNT_D_Available(8001,"账号可能被限制，请检查普通账号状态"),
 
     ERROR_LINK_INVALIDATED(-130,"链接失效"),
     ERROR_Captcha(-20,"触发验证码,请等待一段时间,再返回首页重新解析"),

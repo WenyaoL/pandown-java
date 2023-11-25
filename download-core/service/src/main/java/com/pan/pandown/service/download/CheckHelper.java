@@ -67,16 +67,39 @@ public class CheckHelper {
     }
 
 
+    public void checkBaiduSvipResponseBody(ResponseEntity<Map> responseEntity) throws AccountException {
+
+        //无响应
+        if (responseEntity == null) throw new RuntimeException("请求异常");
+
+        //获取状态消息
+        String errno = responseEntity.getBody().get("errno").toString();
+        BaiduApiErrorNo baiduApiError = BaiduApiErrorNo.toBaiduApiError(errno);
+        if (isSuccessBaiduResponse(baiduApiError)) return;
+
+        //账号问题 冻结
+        if (BaiduApiErrorNo.isAccountError(baiduApiError)) {
+            throw new AccountException(baiduApiError.getMsg());
+        }
+
+    }
+
     /**
      * 检测svip接口的响应
      * @param responseEntity
-     * @param account
      */
-    public void checkBaiduSvipResponse(ResponseEntity<String> responseEntity, DbtableSvip account) throws RuntimeException{
+    public void checkBaiduSvipResponseHeader(ResponseEntity<Map> responseEntity) {
 
         List<String> location = responseEntity.getHeaders().get("Location");
 
-        if (Objects.isNull(location) && location.size()==0) throw new RuntimeException("SVIP链接抓取失败");
+        if (Objects.isNull(location) || location.size()==0) {
+            throw new RuntimeException("SVIP链接抓取失败");
+        }
+
+        if (!responseEntity.getStatusCode().is3xxRedirection()){
+            throw new RuntimeException("SVIP链接抓取失败");
+        }
+
 
     }
 

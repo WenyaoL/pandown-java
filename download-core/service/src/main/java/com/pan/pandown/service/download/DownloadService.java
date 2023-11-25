@@ -16,6 +16,7 @@ import com.pan.pandown.util.exception.AccountException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -190,9 +191,21 @@ public class DownloadService {
         if (!b) throw new RuntimeException("流量不足");
 
         DbtableSvip nextSvip = dbtableSvipService.getNextSvip();
-        ResponseEntity<String> responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
+        ResponseEntity<Map> responseEntity = requestService.requestSvipDlink(shareFileDTO.getDlink(),nextSvip.getSvipBduss());
 
-        checkHelper.checkBaiduSvipResponse(responseEntity,nextSvip);
+        try {
+            checkHelper.checkBaiduSvipResponseHeader(responseEntity);
+        }catch (RuntimeException e){
+            ResponseEntity<Map> svipStatus = requestService.requestSvipDlink(shareFileDTO.getDlink(), nextSvip.getSvipBduss(), HttpMethod.GET);
+            try {
+                checkHelper.checkBaiduSvipResponseBody(svipStatus);
+            } catch (AccountException ex) {
+                dbtableSvipService.freezeSvip(nextSvip.getId());
+                throw new RuntimeException(ex.getMessage());
+            }
+            throw e;
+        }
+
 
         List<String> location = responseEntity.getHeaders().get("Location");
         String link = location.get(0);

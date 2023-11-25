@@ -181,11 +181,10 @@ public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, Dbtab
                 .update();
 
         List<DbtableSvip> list = listAvailableSvip();
-        redisService.multi();
         redisService.del(PANDOWN_SVIP + PANDOWN_SVIP_IDX,PANDOWN_SVIP + PANDOWN_SVIP_LIST);
         redisService.set(PANDOWN_SVIP + PANDOWN_SVIP_IDX,0);
+        if (list == null || list.size()==0) throw new RuntimeException("已无可用的百度云SVIP账号");
         redisService.lPush(PANDOWN_SVIP + PANDOWN_SVIP_LIST, list);
-        redisService.exec();
         return update;
     }
 

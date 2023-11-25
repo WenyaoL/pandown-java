@@ -178,7 +178,12 @@ public class RequestService {
         return responseEntity;
     }
 
-    public ResponseEntity<String> requestSvipDlink(String dlink, String BDUSS) {
+
+
+    public ResponseEntity<Map> requestSvipDlink(String dlink, String BDUSS){
+        return requestSvipDlink(dlink,BDUSS,HttpMethod.HEAD);
+    }
+    public ResponseEntity<Map> requestSvipDlink(String dlink, String BDUSS,HttpMethod httpMethod) {
         URI uri  = null;
         try {
             uri = new URI(dlink);
@@ -192,7 +197,7 @@ public class RequestService {
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(headers);
         //head请求(返回的响应是重定向响应,code:302)
         try {
-            ResponseEntity<String> response = restTemplate.exchange(uri,HttpMethod.HEAD, httpEntity, String.class);
+            ResponseEntity<Map> response = restTemplate.exchange(uri,httpMethod, httpEntity, Map.class);
             return response;
         }catch (Exception e){
             throw new RuntimeException("请求SVIP下载链接时出错");
