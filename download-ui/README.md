@@ -2,7 +2,7 @@
 
 ### introduce
 
-login
+项目前端使用`Vue3+element-plus+Ts`构建
 
 ## Project Setup
 

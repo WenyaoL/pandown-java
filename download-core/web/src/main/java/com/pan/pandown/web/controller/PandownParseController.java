@@ -52,7 +52,7 @@ public class PandownParseController {
     }
 
     @PostMapping("/deleteUserParseHistory")
-    @ApiOperation(value = "获取用户解析历史接口",notes = "用户解析历史",httpMethod = "POST")
+    @ApiOperation(value = "删除用户解析历史接口",notes = "用户解析历史",httpMethod = "POST")
     public BaseResponse deleteUserParseHistory(@RequestBody DeleteParseHistoryDTO deleteParseHistoryDTO){
         PandownUser userDetail = (PandownUser)httpServletRequest.getAttribute("userDetail");
         List<Integer> deleteIds = deleteParseHistoryDTO.getDeleteIds();

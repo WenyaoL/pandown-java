@@ -3,6 +3,7 @@ package com.pan.pandown.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.util.DTO.dbtableSvipApi.AddSvipDetailDTO;
+import com.pan.pandown.util.DTO.dbtableSvipApi.SvipAccountNumDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -21,13 +22,13 @@ public interface IDbtableSvipService extends IService<DbtableSvip> {
      * 获取svip账号数量和svip可用账号数量
      * @return
      */
-    Map getSvipNumDetail();
+    SvipAccountNumDTO getSvipNumDetail();
 
     /**
      * 列出所有账号信息
      * @return
      */
-    List getSvipDetail();
+    List<DbtableSvip> getSvipDetail();
 
     /**
      * 删除账号信息

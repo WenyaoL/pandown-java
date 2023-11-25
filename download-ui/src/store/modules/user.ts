@@ -53,11 +53,12 @@ const actions = {
     return new Promise((resolve, reject) => {    
       UserService.getInfo(state.token).then(response => {
         const { data } = response
+        
         if (!data) {
           return reject('Verification failed, please Login again.')
         }
-        const { username, avatar,role_name } = data
-        commit('SET_ROLES',[role_name])
+        const { username, avatar,roleName } = data
+        commit('SET_ROLES',[roleName])
         commit('SET_NAME', username)
         commit('SET_AVATAR', avatar)
         resolve(data)

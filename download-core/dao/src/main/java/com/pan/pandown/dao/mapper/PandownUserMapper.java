@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pan.pandown.dao.entity.PandownUser;
 import com.pan.pandown.util.PO.PandownUserDetailPO;
+import com.pan.pandown.util.PO.pandownUserApi.UserInfoPO;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public interface PandownUserMapper extends BaseMapper<PandownUser> {
 
     PandownUser selectByEmail(String email);
 
-    Map getUserInfoById(Long id);
+    UserInfoPO getUserInfoById(Long id);
 
     List<String> getPermissionsByUserId(Long id);
 

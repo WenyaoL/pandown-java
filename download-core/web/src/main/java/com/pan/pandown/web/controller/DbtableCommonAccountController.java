@@ -4,6 +4,7 @@ package com.pan.pandown.web.controller;
 import com.pan.pandown.dao.entity.DbtableCommonAccount;
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.service.IDbtableCommonAccountService;
+import com.pan.pandown.util.DTO.dbtableCommonAccountApi.CommonAccountNumDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
@@ -39,7 +40,7 @@ public class DbtableCommonAccountController {
     @PostMapping("/getAccountNum")
     @ApiOperation(value = "获取普通账号数接口", notes = "返回普通账号数量和普通可用账号数量", httpMethod = "POST")
     public BaseResponse getAccountNum() {
-        Map numDetail = dbtableCommonAccountService.getAccountNumDetail();
+        CommonAccountNumDTO numDetail = dbtableCommonAccountService.getAccountNumDetail();
         return new SuccessResponse(numDetail);
     }
 

@@ -17,7 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 public class GetDlinkDTO {
 
-
     private String sign;
 
     private Long timestamp;

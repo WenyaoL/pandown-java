@@ -7,6 +7,7 @@ import com.pan.pandown.dao.mapper.DbtableSvipMapper;
 import com.pan.pandown.service.IDbtableSvipService;
 import com.pan.pandown.service.download.DownloadService;
 import com.pan.pandown.util.DTO.dbtableSvipApi.AddSvipDetailDTO;
+import com.pan.pandown.util.DTO.dbtableSvipApi.SvipAccountNumDTO;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
 import com.pan.pandown.util.redis.RedisService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,19 +51,18 @@ public class DbtableSvipServiceImpl extends ServiceImpl<DbtableSvipMapper, Dbtab
     private final String PANDOWN_SVIP_LIST = "svip_list";
 
     @Override
-    public Map getSvipNumDetail() {
+    public SvipAccountNumDTO getSvipNumDetail() {
         int count = count();
         Long svipNumByState = dbtableSvipMapper.getSvipNumByState("1");
-        HashMap<String, Object> map = new HashMap<String, Object>() {{
-            put("accountNum", count);
-            put("availableAccountNum",svipNumByState);
-        }};
-        return map;
+
+        SvipAccountNumDTO svipAccountNumDTO = new SvipAccountNumDTO(count, svipNumByState);
+
+        return svipAccountNumDTO;
     }
 
     @Override
-    public List getSvipDetail() {
-        List svipDetail = dbtableSvipMapper.getSvipDetail();
+    public List<DbtableSvip> getSvipDetail() {
+        List<DbtableSvip> svipDetail = dbtableSvipMapper.getSvipDetail();
         return svipDetail;
     }
 

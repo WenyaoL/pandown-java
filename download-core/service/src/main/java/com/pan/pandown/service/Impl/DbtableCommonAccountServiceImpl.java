@@ -6,6 +6,7 @@ import com.pan.pandown.dao.entity.DbtableCommonAccount;
 import com.pan.pandown.dao.mapper.DbtableCommonAccountMapper;
 import com.pan.pandown.service.IDbtableCommonAccountService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.pan.pandown.util.DTO.dbtableCommonAccountApi.CommonAccountNumDTO;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
 import com.pan.pandown.util.redis.RedisService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,14 +46,13 @@ public class DbtableCommonAccountServiceImpl extends ServiceImpl<DbtableCommonAc
 
 
     @Override
-    public Map getAccountNumDetail() {
+    public CommonAccountNumDTO getAccountNumDetail() {
         int count = count();
         Long accountNumByState = baseMapper.getAccountNumByState(1);
-        HashMap<String, Object> map = new HashMap<String, Object>() {{
-            put("accountNum", count);
-            put("availableAccountNum", accountNumByState);
-        }};
-        return map;
+
+        CommonAccountNumDTO commonAccountNumDTO = new CommonAccountNumDTO(count, accountNumByState);
+
+        return commonAccountNumDTO;
     }
 
     @Override

@@ -58,12 +58,12 @@ public class DownloadApiController {
 
     @PostMapping("/list_dir")
     @ApiOperation(value = "分享目录解析接口", notes = "分享目录解析(列举指定目录)", httpMethod = "POST")
-    public BaseResponse listShareDir(@RequestBody @Valid ListFileDTO listFileDTO) {
+    public BaseResponse listShareDir(@RequestBody @Valid ListShareDirDTO listShareDirDTO) {
         Map map = downloadService.listDir(
-                listFileDTO.getSurl(),
-                listFileDTO.getPwd(),
-                listFileDTO.getDir(),
-                listFileDTO.getPage()
+                listShareDirDTO.getSurl(),
+                listShareDirDTO.getPwd(),
+                listShareDirDTO.getDir(),
+                listShareDirDTO.getPage()
         );
         if (Objects.isNull(map)) return new FailResponse("获取失败");
 
@@ -105,7 +105,7 @@ public class DownloadApiController {
         if (!available) return new FailResponse("流量不足,或者用户流量被冻结");
 
         try {
-            List svipDlink = downloadService.getSvipDlink(getSvipDlinkDTO, userId);
+            List<ShareFileDTO> svipDlink = downloadService.getSvipDlink(getSvipDlinkDTO, userId);
             return new SuccessResponse(svipDlink);
         }catch (Exception e){
             e.printStackTrace();

@@ -16,6 +16,7 @@ import com.pan.pandown.service.login.TokenService;
 import com.pan.pandown.util.DTO.SpringGrantedAuthority;
 import com.pan.pandown.util.DTO.pandownUserApi.UserRegisterDTO;
 import com.pan.pandown.util.PO.PandownUserDetailPO;
+import com.pan.pandown.util.PO.pandownUserApi.UserInfoPO;
 import com.pan.pandown.util.constants.RegisterCode;
 import com.pan.pandown.util.mybatisPlus.SnowflakeGenerator;
 import com.pan.pandown.util.redis.RedisService;
@@ -171,10 +172,11 @@ public class PandownUserServiceImpl extends ServiceImpl<PandownUserMapper, Pando
     }
 
     @Override
-    public Map getUserInfo(String token) {
+    public UserInfoPO getUserInfo(String token) {
         LoginUser loginUser = tokenService.verifyToken(token);
         Long id = loginUser.getPandownUser().getId();
-        return this.getBaseMapper().getUserInfoById(id);
+        UserInfoPO userInfoPO = baseMapper.getUserInfoById(id);
+        return userInfoPO;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.pan.pandown.service;
 import com.pan.pandown.dao.entity.DbtableCommonAccount;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pan.pandown.dao.entity.DbtableSvip;
+import com.pan.pandown.util.DTO.dbtableCommonAccountApi.CommonAccountNumDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Map;
 public interface IDbtableCommonAccountService extends IService<DbtableCommonAccount> {
 
 
-    Map getAccountNumDetail();
+    CommonAccountNumDTO getAccountNumDetail();
 
     /**
      * 列出所有账号信息

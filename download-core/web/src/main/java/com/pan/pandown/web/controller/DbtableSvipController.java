@@ -3,6 +3,7 @@ package com.pan.pandown.web.controller;
 import com.pan.pandown.dao.entity.DbtableSvip;
 import com.pan.pandown.service.IDbtableSvipService;
 import com.pan.pandown.util.DTO.dbtableSvipApi.AddSvipDetailDTO;
+import com.pan.pandown.util.DTO.dbtableSvipApi.SvipAccountNumDTO;
 import com.pan.pandown.util.baseResp.BaseResponse;
 import com.pan.pandown.util.baseResp.FailResponse;
 import com.pan.pandown.util.baseResp.SuccessResponse;
@@ -34,14 +35,14 @@ public class DbtableSvipController {
     @PostMapping("/getAccountNum")
     @ApiOperation(value = "获取svip账号数接口", notes = "返回svip的账号数量和svip可用账号数量", httpMethod = "POST")
     public BaseResponse getAccountNum() {
-        Map numDetail = dbtableSvipService.getSvipNumDetail();
+        SvipAccountNumDTO numDetail = dbtableSvipService.getSvipNumDetail();
         return new SuccessResponse(numDetail);
     }
 
     @PostMapping("/getAccountDetail")
     @ApiOperation(value = "获取svip账号详情", notes = "返回svip的账号信息", httpMethod = "POST")
     public BaseResponse getAccountDetail() {
-        List svipDetail = dbtableSvipService.getSvipDetail();
+        List<DbtableSvip> svipDetail = dbtableSvipService.getSvipDetail();
         if(Objects.isNull(svipDetail)) return new FailResponse();
         return new SuccessResponse(svipDetail);
     }

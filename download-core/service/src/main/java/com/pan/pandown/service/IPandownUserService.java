@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.pan.pandown.dao.entity.PandownUser;
 import com.pan.pandown.util.DTO.pandownUserApi.UserRegisterDTO;
 import com.pan.pandown.util.PO.PandownUserDetailPO;
+import com.pan.pandown.util.PO.pandownUserApi.UserInfoPO;
 import com.pan.pandown.util.constants.RegisterCode;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -51,7 +52,7 @@ public interface IPandownUserService extends IService<PandownUser>, UserDetailsS
      * @param token
      * @return
      */
-    Map getUserInfo(String token);
+    UserInfoPO getUserInfo(String token);
 
     /**
      * 发送邮箱验证码
